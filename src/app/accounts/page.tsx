@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   selectAccounts,
   selectLoading,
@@ -138,7 +138,6 @@ export default function AllAccountsPage() {
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
   const totalBalance = useSelector(selectTotalBalance);
-  const router = useRouter();
 
   const { t } = useTranslation();
 
@@ -343,15 +342,16 @@ export default function AllAccountsPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push('/')}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t("back")}
-          </Button>
+          <Link href="/">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {t("back")}
+            </Button>
+          </Link>
           <div>
             <h1 className="text-3xl font-bold text-foreground">
               {t("allAccounts")}

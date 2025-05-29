@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   selectAccounts,
   selectLoading,
@@ -156,7 +156,6 @@ export default function HomePage() {
   const error = useSelector(selectError);
   const totalBalance = useSelector(selectTotalBalanceInCurrency);
   const defaultCurrency = useSelector(selectDefaultCurrency);
-  const router = useRouter();
 
   const { t } = useTranslation();
 
@@ -599,18 +598,19 @@ export default function HomePage() {
               {/* View All Accounts Button */}
               {accounts.length > 3 && (
                 <div className="pt-4 border-t">
-                  <Button
-                    variant="outline"
-                    onClick={() => router.push('/accounts')}
-                    className="w-full flex items-center justify-center gap-2"
-                  >
-                    <Eye className="h-4 w-4" />
-                    {t("viewAllAccounts")}
-                    <span className="text-sm text-muted-foreground">
-                      ({accounts.length - 3} more)
-                    </span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
+                  <Link href="/accounts" className="block">
+                    <Button
+                      variant="outline"
+                      className="w-full flex items-center justify-center gap-2"
+                    >
+                      <Eye className="h-4 w-4" />
+                      {t("viewAllAccounts")}
+                      <span className="text-sm text-muted-foreground">
+                        ({accounts.length - 3} more)
+                      </span>
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
                 </div>
               )}
             </div>

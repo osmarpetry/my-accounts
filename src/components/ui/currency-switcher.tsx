@@ -19,7 +19,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getCurrencySymbol, getCurrencyName, getSupportedCurrencies } from "@/lib/utils";
-import { DollarSign, Check } from "lucide-react";
+import { Check } from "lucide-react";
 
 interface CurrencyToggleProps {
   currentCurrency: Currency;

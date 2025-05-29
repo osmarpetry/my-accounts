@@ -23,7 +23,7 @@ import {
   setError,
 } from "@/store/redux-store";
 import { BankAccount, AccountType, Currency } from "@/types";
-import { X, AlertTriangle, CheckCircle, CreditCard, User, Shuffle } from "lucide-react";
+import { X, AlertTriangle, CheckCircle, CreditCard, User } from "lucide-react";
 import { 
   formatCurrency, 
   getSupportedCurrencies, 
@@ -72,7 +72,6 @@ export function AccountForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [showDeactivationWarning, setShowDeactivationWarning] = useState(false);
-  const [pendingDeactivation, setPendingDeactivation] = useState(false);
   const [serverError, setServerError] = useState<{show: boolean, message: string, type: 'warning' | 'error'}>({
     show: false,
     message: '',
@@ -145,7 +144,6 @@ export function AccountForm({
       // If trying to deactivate an account with positive balance, show warning
       if (!checked && account?.balance && account.balance > 0) {
         setShowDeactivationWarning(true);
-        setPendingDeactivation(true);
         return;
       }
       
@@ -165,13 +163,11 @@ export function AccountForm({
     // Proceed with deactivation
     handleFieldChange("isActive", false);
     setShowDeactivationWarning(false);
-    setPendingDeactivation(false);
   };
 
   const handleCancelDeactivation = () => {
     // Keep the account active
     setShowDeactivationWarning(false);
-    setPendingDeactivation(false);
     // Ensure the switch stays in active position
     setFormData({ ...formData, isActive: true });
   };

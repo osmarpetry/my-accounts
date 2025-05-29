@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import {
   selectAccounts,
-  selectAccountsWithDates,
   selectLoading,
   selectError,
   selectTotalBalance,
@@ -136,7 +135,6 @@ function AccountSkeleton() {
 export default function AllAccountsPage() {
   const dispatch = useDispatch();
   const accounts = useSelector(selectAccounts);
-  const accountsWithDates = useSelector(selectAccountsWithDates);
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
   const totalBalance = useSelector(selectTotalBalance);
@@ -160,6 +158,9 @@ export default function AllAccountsPage() {
     accountName: "",
     loading: false,
   });
+  
+  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState<BankAccount | null>(null);
 
   // Fetch accounts on component mount
   useEffect(() => {
@@ -231,6 +232,13 @@ export default function AllAccountsPage() {
   };
 
   const handleDeleteClick = (account: BankAccount) => {
+    // Check if account has balance before showing confirmation
+    if (account.balance > 0) {
+      setAccountToDelete(account);
+      setShowDeleteWarning(true);
+      return;
+    }
+    
     setDeleteDialog({
       open: true,
       accountId: account.id,
@@ -559,6 +567,35 @@ export default function AllAccountsPage() {
         onConfirm={handleDeleteConfirm}
         loading={deleteDialog.loading}
       />
+
+      {/* Delete Warning Modal */}
+      {showDeleteWarning && accountToDelete && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md animate-fade-in">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-orange-500" />
+                {t("operationNotAllowed")}
+              </CardTitle>
+              <CardDescription>
+                {t("cannotDeleteWithBalance")}. This account has a balance of {formatCurrency(accountToDelete.balance, accountToDelete.currency)}. Please transfer the funds or update the balance to zero before deleting.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex gap-2 pt-0">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDeleteWarning(false);
+                  setAccountToDelete(null);
+                }}
+                className="flex-1"
+              >
+                {t("ok")}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 } 

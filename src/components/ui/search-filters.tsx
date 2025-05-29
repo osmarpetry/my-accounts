@@ -33,7 +33,6 @@ import {
 } from "@/lib/utils";
 import { 
   Search, 
-  Filter, 
   X, 
   ChevronDown, 
   ChevronUp,
@@ -54,7 +53,7 @@ interface SearchFiltersProps {
   totalCount?: number;
 }
 
-const accountTypes: { value: AccountType; label: string; icon: React.ComponentType<any> }[] = [
+const accountTypes: { value: AccountType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { value: "checking", label: "Checking", icon: Wallet },
   { value: "savings", label: "Savings", icon: Banknote },
   { value: "credit", label: "Credit", icon: CreditCard },
@@ -169,7 +168,7 @@ export function SearchFilters({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">All Types</SelectItem>
-                    {accountTypes.map(({ value, label, icon: Icon }) => (
+                    {accountTypes.map(({ value, icon: Icon }) => (
                       <SelectItem key={value} value={value}>
                         <div className="flex items-center gap-2">
                           <Icon className="h-4 w-4" />

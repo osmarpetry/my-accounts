@@ -2,7 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next, useTranslation } from 'react-i18next';
 
 // Only import browser language detector if we're on the client side
-let LanguageDetector: any;
+let LanguageDetector: typeof import('i18next-browser-languagedetector').default | undefined;
 if (typeof window !== 'undefined') {
   import('i18next-browser-languagedetector').then((module) => {
     LanguageDetector = module.default;

@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ReduxProvider } from "@/components/redux-provider";
 import { I18nProvider } from "@/components/i18n-provider";
 import { LayoutClient } from "@/components/layout-client";
+import { MSWProvider } from "@/components/msw-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,31 +43,33 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased theme-transition`}
       >
-        <I18nProvider>
-          <ReduxProvider>
-            <ThemeProvider defaultTheme="system">
-              <ErrorBoundary>
-                <div className="min-h-screen bg-background">
-                  <header className="bg-card shadow-sm border-b">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                      <div className="flex justify-between items-center h-16">
-                        <div className="flex items-center">
-                          <h1 className="text-xl font-semibold text-foreground">
-                            Bank Management System
-                          </h1>
+        <MSWProvider>
+          <I18nProvider>
+            <ReduxProvider>
+              <ThemeProvider defaultTheme="system">
+                <ErrorBoundary>
+                  <div className="min-h-screen bg-background">
+                    <header className="bg-card shadow-sm border-b">
+                      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between items-center h-16">
+                          <div className="flex items-center">
+                            <h1 className="text-xl font-semibold text-foreground">
+                              Bank Management System
+                            </h1>
+                          </div>
+                          <LayoutClient />
                         </div>
-                        <LayoutClient />
                       </div>
-                    </div>
-                  </header>
-                  <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    {children}
-                  </main>
-                </div>
-              </ErrorBoundary>
-            </ThemeProvider>
-          </ReduxProvider>
-        </I18nProvider>
+                    </header>
+                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                      {children}
+                    </main>
+                  </div>
+                </ErrorBoundary>
+              </ThemeProvider>
+            </ReduxProvider>
+          </I18nProvider>
+        </MSWProvider>
       </body>
     </html>
   );

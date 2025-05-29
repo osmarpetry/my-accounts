@@ -6,12 +6,10 @@ import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import {
   selectAccounts,
-  selectAccountsWithDates,
   selectLoading,
   selectError,
   selectTotalBalanceInCurrency,
   selectDefaultCurrency,
-  selectLocale,
   setAccounts,
   setLoading,
   setError,
@@ -154,12 +152,10 @@ function AccountSkeleton() {
 export default function HomePage() {
   const dispatch = useDispatch();
   const accounts = useSelector(selectAccounts);
-  const accountsWithDates = useSelector(selectAccountsWithDates);
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
   const totalBalance = useSelector(selectTotalBalanceInCurrency);
   const defaultCurrency = useSelector(selectDefaultCurrency);
-  const locale = useSelector(selectLocale);
   const router = useRouter();
 
   const { t } = useTranslation();
@@ -181,6 +177,9 @@ export default function HomePage() {
     accountName: "",
     loading: false,
   });
+  
+  const [showDeleteWarning, setShowDeleteWarning] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState<BankAccount | null>(null);
 
   // Fetch accounts on component mount
   useEffect(() => {
@@ -234,7 +233,7 @@ export default function HomePage() {
 
   // Calculate stats
   const activeAccounts = accounts.filter((account) => account.isActive).length;
-  const displayAccounts = accountsWithDates.slice(0, 3); // Show up to 3 accounts instead of 1
+  const displayAccounts = accounts.slice(0, 3); // Show up to 3 accounts instead of 1
 
   const handleCreateAccount = () => {
     setEditingAccount(undefined);
@@ -252,6 +251,13 @@ export default function HomePage() {
   };
 
   const handleDeleteClick = (account: BankAccount) => {
+    // Check if account has balance before showing confirmation
+    if (account.balance > 0) {
+      setAccountToDelete(account);
+      setShowDeleteWarning(true);
+      return;
+    }
+    
     setDeleteDialog({
       open: true,
       accountId: account.id,
@@ -559,11 +565,7 @@ export default function HomePage() {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => handleTransferClick({
-                            ...account,
-                            createdAt: account.createdAt.toISOString(),
-                            updatedAt: account.updatedAt.toISOString(),
-                          })}
+                          onClick={() => handleTransferClick(account)}
                           className="h-8 w-8"
                           title={t("transfer")}
                         >
@@ -573,13 +575,7 @@ export default function HomePage() {
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() =>
-                          handleEditAccount({
-                            ...account,
-                            createdAt: account.createdAt.toISOString(),
-                            updatedAt: account.updatedAt.toISOString(),
-                          })
-                        }
+                        onClick={() => handleEditAccount(account)}
                         className="h-8 w-8"
                         data-testid="edit-account-button"
                         title={t("edit")}
@@ -589,13 +585,7 @@ export default function HomePage() {
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() =>
-                          handleDeleteClick({
-                            ...account,
-                            createdAt: account.createdAt.toISOString(),
-                            updatedAt: account.updatedAt.toISOString(),
-                          })
-                        }
+                        onClick={() => handleDeleteClick(account)}
                         className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
                         title={t("delete")}
                       >
@@ -657,6 +647,35 @@ export default function HomePage() {
         onConfirm={handleDeleteConfirm}
         loading={deleteDialog.loading}
       />
+
+      {/* Delete Warning Modal */}
+      {showDeleteWarning && accountToDelete && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md animate-fade-in">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-orange-500" />
+                {t("operationNotAllowed")}
+              </CardTitle>
+              <CardDescription>
+                {t("cannotDeleteWithBalance")}. This account has a balance of {formatCurrency(accountToDelete.balance, accountToDelete.currency)}. Please transfer the funds or update the balance to zero before deleting.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex gap-2 pt-0">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDeleteWarning(false);
+                  setAccountToDelete(null);
+                }}
+                className="flex-1"
+              >
+                {t("ok")}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

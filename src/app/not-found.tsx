@@ -15,7 +15,7 @@ export default function NotFound() {
         </CardHeader>
         <CardContent className="text-center space-y-4">
           <p className="text-muted-foreground">
-            The page you're looking for doesn't exist or has been moved.
+            The page you&rsquo;re looking for doesn&rsquo;t exist or has been moved.
           </p>
           <Link href="/">
             <Button className="w-full flex items-center gap-2">

@@ -1,48 +1,65 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
-import { createAccountSchema } from "@/lib/validations";
+import { createAccountSchema, searchCriteriaSchema } from "@/lib/validations";
 import { BankAccount, ApiResponse } from "@/types";
-import { generateAccountNumber } from "@/lib/utils";
-
-// In-memory storage for demo purposes
-// In production, this would be a database
-const accounts: BankAccount[] = [
-  {
-    id: "1",
-    accountNumber: "1234567890",
-    accountType: "checking",
-    accountHolder: "John Doe",
-    balance: 5000,
-    currency: "USD",
-    isActive: true,
-    createdAt: "2024-01-15T00:00:00.000Z",
-    updatedAt: "2024-01-15T00:00:00.000Z",
-  },
-  {
-    id: "2",
-    accountNumber: "0987654321",
-    accountType: "savings",
-    accountHolder: "Jane Smith",
-    balance: 15000,
-    currency: "USD",
-    isActive: true,
-    createdAt: "2024-01-10T00:00:00.000Z",
-    updatedAt: "2024-01-10T00:00:00.000Z",
-  },
-];
+import { generateAccountNumber, searchAccounts } from "@/lib/utils";
+import { mockAccounts } from "@/lib/mock-data";
 
 // Helper function to add delay for demonstration
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function GET(): Promise<NextResponse<ApiResponse<BankAccount[]>>> {
+export async function GET(request: NextRequest): Promise<NextResponse<ApiResponse<BankAccount[]>>> {
   try {
     // Add 1 second delay to show loading states
     await delay(1000);
 
+    // Get search and filter parameters from URL
+    const searchParams = request.nextUrl.searchParams;
+    
+    // Build search criteria from query parameters
+    const searchCriteria: any = {};
+    
+    const query = searchParams.get("search");
+    if (query) searchCriteria.query = query;
+    
+    const currency = searchParams.get("currency");
+    if (currency) searchCriteria.currency = currency;
+    
+    const accountType = searchParams.get("accountType");
+    if (accountType) searchCriteria.accountType = accountType;
+    
+    const ownerIdParam = searchParams.get("ownerId");
+    if (ownerIdParam) searchCriteria.ownerId = parseInt(ownerIdParam);
+    
+    const isActiveParam = searchParams.get("isActive");
+    if (isActiveParam) searchCriteria.isActive = isActiveParam === "true";
+    
+    const minBalanceParam = searchParams.get("minBalance");
+    if (minBalanceParam) searchCriteria.minBalance = parseFloat(minBalanceParam);
+    
+    const maxBalanceParam = searchParams.get("maxBalance");
+    if (maxBalanceParam) searchCriteria.maxBalance = parseFloat(maxBalanceParam);
+
+    // Validate search criteria
+    const validation = searchCriteriaSchema.safeParse(searchCriteria);
+    if (!validation.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid search criteria",
+          message: validation.error.errors[0]?.message || "Invalid parameters",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Use the enhanced search function
+    const filteredAccounts = searchAccounts(mockAccounts, validation.data);
+
     return NextResponse.json({
       success: true,
-      data: accounts,
-      message: "Accounts retrieved successfully",
+      data: filteredAccounts,
+      message: `Found ${filteredAccounts.length} account(s)`,
     });
   } catch (error) {
     console.error("Error fetching accounts:", error);
@@ -79,12 +96,45 @@ export async function POST(
       );
     }
 
-    const { accountHolder, accountType, initialBalance, currency } =
+    const { ownerId, accountHolder, accountType, initialBalance, currency } =
       validation.data;
+
+    // Check for duplicate owner ID
+    const existingAccountWithOwnerId = mockAccounts.find(
+      (account) => account.ownerId === ownerId
+    );
+
+    if (existingAccountWithOwnerId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Owner ID already exists",
+          message: `An account with owner ID ${ownerId} already exists`,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Check for duplicate account holder name
+    const existingAccountWithName = mockAccounts.find(
+      (account) => account.accountHolder.toLowerCase() === accountHolder.toLowerCase()
+    );
+
+    if (existingAccountWithName) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Account holder name already exists",
+          message: "An account with this holder name already exists",
+        },
+        { status: 400 }
+      );
+    }
 
     // Create new account
     const newAccount: BankAccount = {
       id: uuidv4(),
+      ownerId,
       accountNumber: generateAccountNumber(),
       accountType,
       accountHolder,
@@ -95,7 +145,7 @@ export async function POST(
       updatedAt: new Date().toISOString(),
     };
 
-    accounts.push(newAccount);
+    mockAccounts.push(newAccount);
 
     return NextResponse.json(
       {

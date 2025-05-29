@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 
 interface SelectContextType {
-  value?: string;
-  onValueChange?: (value: string) => void;
+  value: string;
+  onValueChange: (value: string) => void;
   open: boolean;
   setOpen: (open: boolean) => void;
   contentId: string;
@@ -28,7 +28,7 @@ export function Select({ value, onValueChange, children }: SelectProps) {
 
   const contextValue: SelectContextType = {
     value: value || "",
-    onValueChange,
+    onValueChange: onValueChange || (() => {}),
     open,
     setOpen,
     contentId,
@@ -129,7 +129,7 @@ const SelectItem = React.forwardRef<
         className
       )}
       onClick={() => {
-        context.onValueChange?.(value);
+        context.onValueChange(value);
         context.setOpen(false);
       }}
       {...props}

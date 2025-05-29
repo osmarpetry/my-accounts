@@ -39,3 +39,21 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# test folders
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/test-results/
+/coverage/
+/cypress/videos/
+/cypress/screenshots/
+/cypress/downloads/
+/jest-coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+coverage/
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/

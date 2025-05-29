@@ -1,51 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateAccountSchema } from "@/lib/validations";
 import { BankAccount, ApiResponse } from "@/types";
-
-// Import the same accounts array from the main route
-// In production, this would be from a database
-const accounts: BankAccount[] = [
-  {
-    id: "1",
-    accountNumber: "1234567890",
-    accountType: "checking",
-    accountHolder: "John Doe",
-    balance: 5000,
-    currency: "USD",
-    isActive: true,
-    createdAt: "2024-01-15T00:00:00.000Z",
-    updatedAt: "2024-01-15T00:00:00.000Z",
-  },
-  {
-    id: "2",
-    accountNumber: "0987654321",
-    accountType: "savings",
-    accountHolder: "Jane Smith",
-    balance: 15000,
-    currency: "USD",
-    isActive: true,
-    createdAt: "2024-01-10T00:00:00.000Z",
-    updatedAt: "2024-01-10T00:00:00.000Z",
-  },
-];
+import { mockAccounts } from "@/lib/mock-data";
 
 // Helper function to add delay for demonstration
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-interface RouteParams {
-  params: Promise<{ id: string }>;
-}
-
 export async function GET(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<ApiResponse<BankAccount>>> {
   try {
-    // Add 1 second delay to show loading states
-    await delay(1000);
-
+    await delay(500);
     const { id } = await params;
-    const account = accounts.find((acc) => acc.id === id);
+
+    const account = mockAccounts.find((acc) => acc.id === id);
 
     if (!account) {
       return NextResponse.json(
@@ -76,13 +45,24 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<ApiResponse<BankAccount>>> {
   try {
-    // Add 1 second delay to show loading states
     await delay(1000);
-
     const { id } = await params;
+
+    const accountIndex = mockAccounts.findIndex((acc) => acc.id === id);
+
+    if (accountIndex === -1) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Account not found",
+        },
+        { status: 404 }
+      );
+    }
+
     const body = await request.json();
 
     // Validate the request body
@@ -99,35 +79,50 @@ export async function PUT(
       );
     }
 
-    const accountIndex = accounts.findIndex((acc) => acc.id === id);
+    const existingAccount = mockAccounts[accountIndex]!;
+    const { accountHolder, balance, currency, isActive } = validation.data;
 
-    if (accountIndex === -1) {
+    // Business logic validation
+    if (isActive === false && (balance ?? existingAccount.balance) > 0) {
       return NextResponse.json(
         {
           success: false,
-          error: "Account not found",
+          error: "Cannot deactivate account with positive balance",
+          message: "Please transfer the remaining balance before deactivating the account",
         },
-        { status: 404 }
+        { status: 400 }
       );
     }
 
-    // Update the account
-    const currentAccount = accounts[accountIndex]!;
+    // Check if account holder name is being changed to an existing one
+    if (accountHolder && accountHolder !== existingAccount.accountHolder) {
+      const duplicateAccount = mockAccounts.find(
+        (acc) => acc.accountHolder.toLowerCase() === accountHolder.toLowerCase() && acc.id !== id
+      );
+      
+      if (duplicateAccount) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Account holder name already exists",
+            message: "An account with this holder name already exists",
+          },
+          { status: 400 }
+        );
+      }
+    }
 
+    // Update the account
     const updatedAccount: BankAccount = {
-      ...currentAccount,
+      ...existingAccount,
+      ...(accountHolder !== undefined && { accountHolder }),
+      ...(balance !== undefined && { balance }),
+      ...(currency !== undefined && { currency }),
+      ...(isActive !== undefined && { isActive }),
       updatedAt: new Date().toISOString(),
     };
 
-    // Apply updates only for defined values
-    if (validation.data.accountHolder !== undefined) {
-      updatedAccount.accountHolder = validation.data.accountHolder;
-    }
-    if (validation.data.isActive !== undefined) {
-      updatedAccount.isActive = validation.data.isActive;
-    }
-
-    accounts[accountIndex] = updatedAccount;
+    mockAccounts[accountIndex] = updatedAccount;
 
     return NextResponse.json({
       success: true,
@@ -148,14 +143,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<ApiResponse<null>>> {
   try {
-    // Add 1 second delay to show loading states
     await delay(1000);
-
     const { id } = await params;
-    const accountIndex = accounts.findIndex((acc) => acc.id === id);
+
+    const accountIndex = mockAccounts.findIndex((acc) => acc.id === id);
 
     if (accountIndex === -1) {
       return NextResponse.json(
@@ -167,8 +161,33 @@ export async function DELETE(
       );
     }
 
+    const account = mockAccounts[accountIndex]!;
+
+    // Business logic validation
+    if (account.balance > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Cannot delete account with positive balance",
+          message: "Please transfer the remaining balance before deleting the account",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (account.balance < 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Cannot delete account with negative balance",
+          message: "Please resolve the negative balance before deleting the account",
+        },
+        { status: 400 }
+      );
+    }
+
     // Remove the account
-    accounts.splice(accountIndex, 1);
+    mockAccounts.splice(accountIndex, 1);
 
     return NextResponse.json({
       success: true,

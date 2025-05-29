@@ -4,12 +4,34 @@ import {
   PayloadAction,
   createSelector,
 } from "@reduxjs/toolkit";
-import { BankAccount, Transaction, LoadingState, FilterState } from "@/types";
+import { BankAccount, Transaction, LoadingState, FilterState, Currency } from "@/types";
 import { Locale, defaultLocale } from "@/lib/i18n";
 
 // Helper functions for date conversion
 export const dateToISOString = (date: Date): string => date.toISOString();
 export const isoStringToDate = (isoString: string): Date => new Date(isoString);
+
+// Mock exchange rates (in a real app, this would come from an API)
+const exchangeRates: Record<Currency, Record<Currency, number>> = {
+  USD: { USD: 1, EUR: 0.85, GBP: 0.73, CHF: 0.88, CNY: 6.95, SEK: 9.50, NOK: 9.20, DKK: 6.30, PLN: 4.10, CZK: 22.50, HUF: 350 },
+  EUR: { USD: 1.18, EUR: 1, GBP: 0.86, CHF: 1.04, CNY: 8.20, SEK: 11.20, NOK: 10.85, DKK: 7.44, PLN: 4.83, CZK: 26.50, HUF: 412 },
+  GBP: { USD: 1.37, EUR: 1.16, GBP: 1, CHF: 1.21, CNY: 9.52, SEK: 13.02, NOK: 12.61, DKK: 8.64, PLN: 5.61, CZK: 30.80, HUF: 479 },
+  CHF: { USD: 1.13, EUR: 0.96, GBP: 0.83, CHF: 1, CNY: 7.88, SEK: 10.77, NOK: 10.43, DKK: 7.16, PLN: 4.65, CZK: 25.56, HUF: 398 },
+  CNY: { USD: 0.14, EUR: 0.12, GBP: 0.11, CHF: 0.13, CNY: 1, SEK: 1.37, NOK: 1.32, DKK: 0.91, PLN: 0.59, CZK: 3.24, HUF: 50.4 },
+  SEK: { USD: 0.11, EUR: 0.09, GBP: 0.08, CHF: 0.09, CNY: 0.73, SEK: 1, NOK: 0.97, DKK: 0.66, PLN: 0.43, CZK: 2.37, HUF: 36.8 },
+  NOK: { USD: 0.11, EUR: 0.09, GBP: 0.08, CHF: 0.10, CNY: 0.76, SEK: 1.03, NOK: 1, DKK: 0.68, PLN: 0.45, CZK: 2.45, HUF: 38.0 },
+  DKK: { USD: 0.16, EUR: 0.13, GBP: 0.12, CHF: 0.14, CNY: 1.10, SEK: 1.51, NOK: 1.46, DKK: 1, PLN: 0.65, CZK: 3.57, HUF: 55.6 },
+  PLN: { USD: 0.24, EUR: 0.21, GBP: 0.18, CHF: 0.22, CNY: 1.69, SEK: 2.32, NOK: 2.24, DKK: 1.54, PLN: 1, CZK: 5.49, HUF: 85.4 },
+  CZK: { USD: 0.04, EUR: 0.04, GBP: 0.03, CHF: 0.04, CNY: 0.31, SEK: 0.42, NOK: 0.41, DKK: 0.28, PLN: 0.18, CZK: 1, HUF: 15.6 },
+  HUF: { USD: 0.003, EUR: 0.002, GBP: 0.002, CHF: 0.003, CNY: 0.020, SEK: 0.027, NOK: 0.026, DKK: 0.018, PLN: 0.012, CZK: 0.064, HUF: 1 }
+};
+
+// Currency conversion function
+export const convertCurrency = (amount: number, fromCurrency: Currency, toCurrency: Currency): number => {
+  if (fromCurrency === toCurrency) return amount;
+  const rate = exchangeRates[fromCurrency]?.[toCurrency] ?? 1;
+  return Math.round(amount * rate * 100) / 100; // Round to 2 decimal places
+};
 
 // Helper function to convert accounts with Date objects to serializable format
 export const serializeAccount = (
@@ -45,6 +67,7 @@ interface BankState {
   filters: FilterState;
   error: string | null;
   locale: Locale;
+  defaultCurrency: Currency;
 }
 
 const initialState: BankState = {
@@ -59,6 +82,7 @@ const initialState: BankState = {
   filters: {},
   error: null,
   locale: defaultLocale,
+  defaultCurrency: "USD" as Currency,
 };
 
 const bankSlice = createSlice({
@@ -147,6 +171,9 @@ const bankSlice = createSlice({
     setLocale: (state, action: PayloadAction<Locale>) => {
       state.locale = action.payload;
     },
+    setDefaultCurrency: (state, action: PayloadAction<Currency>) => {
+      state.defaultCurrency = action.payload;
+    },
   },
 });
 
@@ -162,6 +189,7 @@ export const {
   setError,
   clearError,
   setLocale,
+  setDefaultCurrency,
 } = bankSlice.actions;
 
 // Selectors
@@ -171,6 +199,7 @@ export const selectLoading = (state: RootState) => state.bank.loading;
 export const selectFilters = (state: RootState) => state.bank.filters;
 export const selectError = (state: RootState) => state.bank.error;
 export const selectLocale = (state: RootState) => state.bank.locale;
+export const selectDefaultCurrency = (state: RootState) => state.bank.defaultCurrency;
 
 // Selectors that return data with Date objects for UI consumption
 export const selectAccountsWithDates = createSelector(
@@ -193,6 +222,19 @@ export const selectTotalBalance = (state: RootState) => {
     .filter((account) => account.isActive)
     .reduce((total, account) => total + account.balance, 0);
 };
+
+// Currency-converted total balance
+export const selectTotalBalanceInCurrency = createSelector(
+  [selectAccounts, selectDefaultCurrency],
+  (accounts, defaultCurrency) => {
+    return accounts
+      .filter((account) => account.isActive)
+      .reduce((total, account) => {
+        const convertedBalance = convertCurrency(account.balance, account.currency, defaultCurrency);
+        return total + convertedBalance;
+      }, 0);
+  }
+);
 
 export const selectAccountById = (accountId: string) => (state: RootState) => {
   return state.bank.accounts.find((account) => account.id === accountId);
@@ -221,6 +263,11 @@ export const selectFilteredAccounts = createSelector(
       return true;
     });
   }
+);
+
+export const selectFilteredAccountsWithDates = createSelector(
+  [selectFilteredAccounts],
+  (accounts) => accounts.map(deserializeAccount)
 );
 
 export const selectAccountTransactions = (accountId: string) =>

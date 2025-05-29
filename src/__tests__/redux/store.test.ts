@@ -18,6 +18,7 @@ describe("Redux Store", () => {
     accountNumber: "1234567890",
     accountType: "checking",
     accountHolder: "Test User",
+    ownerId: 123456,
     balance: 1000,
     currency: "USD",
     isActive: true,

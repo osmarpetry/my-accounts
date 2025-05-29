@@ -9,15 +9,12 @@ import {
   selectAccountsWithDates,
   selectLoading,
   selectError,
-  selectTotalBalanceInCurrency,
-  selectDefaultCurrency,
-  selectLocale,
+  selectTotalBalance,
   setAccounts,
   setLoading,
   setError,
   clearError,
   deleteAccount,
-  convertCurrency,
 } from "@/store/redux-store";
 import {
   Card,
@@ -30,7 +27,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AccountForm } from "@/components/forms/account-form";
 import { TransferForm } from "@/components/forms/transfer-form";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { SearchFilters } from "@/components/ui/search-filters";
+import { formatCurrency, formatDate, searchAccounts } from "@/lib/utils";
 import {
   Plus,
   CreditCard,
@@ -42,22 +40,21 @@ import {
   ArrowRightLeft,
   Wallet,
   PiggyBank,
-  Eye,
-  ArrowRight,
+  ArrowLeft,
 } from "lucide-react";
-import { BankAccount, AccountType } from "@/types";
+import { BankAccount, AccountType, SearchCriteria } from "@/types";
 
 // Account type icons following the requested design
 const getAccountTypeIcon = (accountType: AccountType) => {
   switch (accountType) {
     case "checking":
-      return <Wallet className="h-5 w-5" />;
+      return <Wallet className="h-5 w-5 text-primary" />;
     case "savings":
-      return <PiggyBank className="h-5 w-5" />;
+      return <PiggyBank className="h-5 w-5 text-primary" />;
     case "credit":
-      return <CreditCard className="h-5 w-5" />;
+      return <CreditCard className="h-5 w-5 text-primary" />;
     default:
-      return <Wallet className="h-5 w-5" />;
+      return <Wallet className="h-5 w-5 text-primary" />;
   }
 };
 
@@ -116,22 +113,7 @@ function ConfirmDialog({
   );
 }
 
-// Skeleton component for loading states
-function SkeletonCard() {
-  return (
-    <Card>
-      <CardHeader className="space-y-2">
-        <div className="h-4 bg-muted rounded animate-pulse" />
-        <div className="h-3 bg-muted rounded w-2/3 animate-pulse" />
-      </CardHeader>
-      <CardContent>
-        <div className="h-8 bg-muted rounded animate-pulse mb-2" />
-        <div className="h-3 bg-muted rounded w-3/4 animate-pulse" />
-      </CardContent>
-    </Card>
-  );
-}
-
+// Skeleton components for loading states
 function AccountSkeleton() {
   return (
     <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -151,15 +133,13 @@ function AccountSkeleton() {
   );
 }
 
-export default function HomePage() {
+export default function AllAccountsPage() {
   const dispatch = useDispatch();
   const accounts = useSelector(selectAccounts);
   const accountsWithDates = useSelector(selectAccountsWithDates);
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
-  const totalBalance = useSelector(selectTotalBalanceInCurrency);
-  const defaultCurrency = useSelector(selectDefaultCurrency);
-  const locale = useSelector(selectLocale);
+  const totalBalance = useSelector(selectTotalBalance);
   const router = useRouter();
 
   const { t } = useTranslation();
@@ -167,9 +147,8 @@ export default function HomePage() {
   const [showAccountForm, setShowAccountForm] = useState(false);
   const [showTransferForm, setShowTransferForm] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
-  const [editingAccount, setEditingAccount] = useState<
-    BankAccount | undefined
-  >();
+  const [editingAccount, setEditingAccount] = useState<BankAccount | undefined>();
+  const [searchCriteria, setSearchCriteria] = useState<SearchCriteria>({});
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     accountId: string;
@@ -193,7 +172,6 @@ export default function HomePage() {
         const data = await response.json();
 
         if (data.success) {
-          // The API returns accounts with ISO string dates, so we can dispatch them directly
           const accountsWithISODates = data.data.map(
             (account: {
               id: string;
@@ -203,6 +181,7 @@ export default function HomePage() {
               balance: number;
               currency: string;
               isActive: boolean;
+              ownerId: number;
               createdAt: string;
               updatedAt: string;
             }) => ({
@@ -223,7 +202,7 @@ export default function HomePage() {
         }
       } catch (err) {
         dispatch(setError("Network error occurred"));
-        console.error("Error fetching accounts:", err);
+        console.error("Fetch accounts error:", err);
       } finally {
         dispatch(setLoading({ key: "accounts", value: false }));
       }
@@ -232,9 +211,9 @@ export default function HomePage() {
     fetchAccounts();
   }, [dispatch]);
 
-  // Calculate stats
-  const activeAccounts = accounts.filter((account) => account.isActive).length;
-  const displayAccounts = accountsWithDates.slice(0, 3); // Show up to 3 accounts instead of 1
+  // Filter accounts based on search criteria
+  const filteredAccounts = searchAccounts(accounts, searchCriteria);
+  const activeAccounts = accounts.filter((acc) => acc.isActive).length;
 
   const handleCreateAccount = () => {
     setEditingAccount(undefined);
@@ -261,25 +240,18 @@ export default function HomePage() {
   };
 
   const handleDeleteConfirm = async () => {
-    const { accountId } = deleteDialog;
-
     setDeleteDialog((prev) => ({ ...prev, loading: true }));
 
     try {
-      const response = await fetch(`/api/accounts/${accountId}`, {
+      const response = await fetch(`/api/accounts/${deleteDialog.accountId}`, {
         method: "DELETE",
       });
 
       const data = await response.json();
 
       if (data.success) {
-        dispatch(deleteAccount(accountId));
-        setDeleteDialog({
-          open: false,
-          accountId: "",
-          accountName: "",
-          loading: false,
-        });
+        dispatch(deleteAccount(deleteDialog.accountId));
+        setDeleteDialog({ open: false, accountId: "", accountName: "", loading: false });
       } else {
         dispatch(setError(data.error || "Failed to delete account"));
         setDeleteDialog((prev) => ({ ...prev, loading: false }));
@@ -299,11 +271,14 @@ export default function HomePage() {
   };
 
   const handleFormSuccess = () => {
-    // Form will handle Redux state updates automatically
     setShowAccountForm(false);
     setShowTransferForm(false);
     setEditingAccount(undefined);
     setSelectedAccount(null);
+  };
+
+  const handleClearFilters = () => {
+    setSearchCriteria({});
   };
 
   // Loading state
@@ -318,33 +293,11 @@ export default function HomePage() {
           <div className="h-9 bg-muted rounded w-32 animate-pulse" />
         </div>
 
-        {/* Accounts Summary */}
-        <Card>
-          <CardContent className="py-4">
-            <div className="flex items-center justify-between">
-              <div className="h-4 bg-muted rounded w-48 animate-pulse" />
-              <div className="h-4 bg-muted rounded w-24 animate-pulse" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, i) => (
-            <SkeletonCard key={i} />
+        <div className="space-y-4">
+          {[...Array(5)].map((_, i) => (
+            <AccountSkeleton key={i} />
           ))}
         </div>
-
-        <Card>
-          <CardHeader>
-            <div className="h-6 bg-muted rounded w-32 animate-pulse mb-2" />
-            <div className="h-4 bg-muted rounded w-48 animate-pulse" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <AccountSkeleton key={i} />
-            ))}
-          </CardContent>
-        </Card>
       </div>
     );
   }
@@ -362,15 +315,15 @@ export default function HomePage() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">{error}</p>
-              <Button
+            <Button
               onClick={() => {
                 dispatch(clearError());
                 window.location.reload();
               }}
               className="w-full"
-              >
-                {t("refresh")}
-              </Button>
+            >
+              {t("refresh")}
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -381,11 +334,24 @@ export default function HomePage() {
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">
-            {t("bankManagementSystem")}
-          </h1>
-          <p className="text-muted-foreground mt-1">{t("accounts")}</p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push('/')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {t("back")}
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">
+              {t("allAccounts")}
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Manage all your bank accounts
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <Button
@@ -398,122 +364,99 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Accounts Summary - replaces filters with cleaner design */}
-      <Card className="border-l-4 border-l-primary/20">
-        <CardContent className="py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">
-                  {displayAccounts.length === 1 
-                    ? `${t("showing")} 1 ${t("account")}` 
-                    : `${t("showing")} ${displayAccounts.length} ${t("accounts")}`}
-                </span>
-              </div>
-              <div className="h-4 w-px bg-border" />
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-green-500" />
-                  <span>{activeAccounts} {t("active").toLowerCase()}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-gray-400" />
-                  <span>{accounts.length - activeAccounts} {t("inactive").toLowerCase()}</span>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs">
-                Total: {formatCurrency(totalBalance, defaultCurrency)}
-              </Badge>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Search and Filters */}
+      <SearchFilters
+        searchCriteria={searchCriteria}
+        onSearchChange={setSearchCriteria}
+        onClearFilters={handleClearFilters}
+        resultCount={filteredAccounts.length}
+        totalCount={accounts.length}
+      />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="theme-transition">
+      {/* Stats Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t("balance")}
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">{t("balance")}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {formatCurrency(totalBalance, defaultCurrency)}
+              {formatCurrency(totalBalance)}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {t("available")} • {defaultCurrency}
-            </p>
           </CardContent>
         </Card>
 
-        <Card className="theme-transition">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t("accounts")}
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">{t("accounts")}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeAccounts}</div>
-            <p className="text-xs text-muted-foreground">
-              {accounts.length - activeAccounts}{" "}
-              {t("inactive").toLowerCase()}
-            </p>
+            <div className="text-2xl font-bold">{accounts.length}</div>
           </CardContent>
         </Card>
 
-        <Card className="theme-transition">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t("accountType")}
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">{t("active")}</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{accounts.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {t("totalManaged")}
-            </p>
+            <div className="text-2xl font-bold text-green-600">{activeAccounts}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t("filtered")}</CardTitle>
+            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{filteredAccounts.length}</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Accounts List - Show Only First Account */}
-      <Card className="theme-transition">
+      {/* Accounts List */}
+      <Card>
         <CardHeader>
           <CardTitle>{t("accounts")}</CardTitle>
           <CardDescription>
-            {accounts.length <= 3 
-              ? t("accountDetails")
-              : `${t("showing")} 3 ${t("of")} ${accounts.length} ${t("accounts")}`}
+            {filteredAccounts.length === accounts.length
+              ? `${t("showing")} ${t("allAccounts").toLowerCase()} ${accounts.length} ${t("accounts")}`
+              : `${t("showing")} ${filteredAccounts.length} ${t("of")} ${accounts.length} ${t("accounts")}`}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {displayAccounts.length === 0 ? (
+          {filteredAccounts.length === 0 ? (
             <div className="text-center py-8">
               <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
-                {t("noAccountsFound")}
+                {accounts.length === 0 ? t("noAccountsFound") : t("noMatchingAccounts")}
               </h3>
               <p className="text-muted-foreground mb-4">
-                {t("createFirstAccount")}
+                {accounts.length === 0 
+                  ? t("createFirstAccount")
+                  : t("adjustSearchCriteria")}
               </p>
-              <Button onClick={handleCreateAccount}>
-                <Plus className="h-4 w-4 mr-2" />
-                {t("createAccount")}
-              </Button>
+              {accounts.length === 0 ? (
+                <Button onClick={handleCreateAccount}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t("createAccount")}
+                </Button>
+              ) : (
+                <Button onClick={handleClearFilters} variant="outline">
+                  {t("clearFilters")}
+                </Button>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
-              {displayAccounts.map((account) => (
+              {filteredAccounts.map((account) => (
                 <div
                   key={account.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors theme-transition"
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
                 >
                   <div className="flex items-center space-x-4">
                     <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
@@ -527,7 +470,7 @@ export default function HomePage() {
                         {account.accountNumber} • {t(account.accountType)}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {t("createdAt")}: {formatDate(account.createdAt)}
+                        {t("ownerId")}: {account.ownerId} • {t("createdAt")}: {formatDate(account.createdAt)}
                       </p>
                     </div>
                   </div>
@@ -536,18 +479,11 @@ export default function HomePage() {
                       <div className="font-semibold text-lg">
                         {formatCurrency(account.balance, account.currency)}
                       </div>
-                      {account.currency !== defaultCurrency && (
-                        <div className="text-sm text-muted-foreground">
-                          ≈ {formatCurrency(convertCurrency(account.balance, account.currency, defaultCurrency), defaultCurrency)}
-                        </div>
-                      )}
                       <div className="flex items-center gap-2 mt-1">
                         <Badge
                           variant={account.isActive ? "default" : "secondary"}
                         >
-                          {account.isActive
-                            ? t("active")
-                            : t("inactive")}
+                          {account.isActive ? t("active") : t("inactive")}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
                           {account.currency}
@@ -559,11 +495,7 @@ export default function HomePage() {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => handleTransferClick({
-                            ...account,
-                            createdAt: account.createdAt.toISOString(),
-                            updatedAt: account.updatedAt.toISOString(),
-                          })}
+                          onClick={() => handleTransferClick(account)}
                           className="h-8 w-8"
                           title={t("transfer")}
                         >
@@ -573,13 +505,7 @@ export default function HomePage() {
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() =>
-                          handleEditAccount({
-                            ...account,
-                            createdAt: account.createdAt.toISOString(),
-                            updatedAt: account.updatedAt.toISOString(),
-                          })
-                        }
+                        onClick={() => handleEditAccount(account)}
                         className="h-8 w-8"
                         data-testid="edit-account-button"
                         title={t("edit")}
@@ -589,13 +515,7 @@ export default function HomePage() {
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() =>
-                          handleDeleteClick({
-                            ...account,
-                            createdAt: account.createdAt.toISOString(),
-                            updatedAt: account.updatedAt.toISOString(),
-                          })
-                        }
+                        onClick={() => handleDeleteClick(account)}
                         className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
                         title={t("delete")}
                       >
@@ -605,24 +525,6 @@ export default function HomePage() {
                   </div>
                 </div>
               ))}
-              
-              {/* View All Accounts Button */}
-              {accounts.length > 3 && (
-                <div className="pt-4 border-t">
-                  <Button
-                    variant="outline"
-                    onClick={() => router.push('/accounts')}
-                    className="w-full flex items-center justify-center gap-2"
-                  >
-                    <Eye className="h-4 w-4" />
-                    {t("viewAllAccounts")}
-                    <span className="text-sm text-muted-foreground">
-                      ({accounts.length - 3} more)
-                    </span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
             </div>
           )}
         </CardContent>
@@ -653,10 +555,10 @@ export default function HomePage() {
           !open && setDeleteDialog((prev) => ({ ...prev, open: false }))
         }
         title={t("deleteAccount")}
-        description={`Are you sure you want to delete the account "${deleteDialog.accountName}"? This action cannot be undone.`}
+        description={t("deleteConfirmation", { accountName: deleteDialog.accountName })}
         onConfirm={handleDeleteConfirm}
         loading={deleteDialog.loading}
       />
     </div>
   );
-}
+} 

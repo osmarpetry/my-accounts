@@ -14,10 +14,12 @@ export const currencySchema = z.enum([
 
 export const createAccountSchema = z.object({
   ownerId: z
-    .number()
-    .int("Owner ID must be an integer")
-    .min(100000, "Owner ID must be at least 6 digits")
-    .max(999999, "Owner ID must be at most 6 digits"),
+    .string()
+    .regex(/^\d{6}$/, "Owner ID must be exactly 6 digits")
+    .refine((val) => {
+      const num = parseInt(val);
+      return num >= 100000 && num <= 999999;
+    }, "Owner ID must be between 100000 and 999999"),
   accountHolder: z
     .string()
     .min(2, "Account holder name must be at least 2 characters")
@@ -96,7 +98,7 @@ export const filterSchema = z.object({
     .max(100, "Search term cannot exceed 100 characters")
     .optional(),
   currency: currencySchema.optional(),
-  ownerId: z.number().int().positive().optional(),
+  ownerId: z.string().regex(/^\d{1,6}$/).optional(),
 });
 
 // Search criteria schema
@@ -104,7 +106,7 @@ export const searchCriteriaSchema = z.object({
   query: z.string().max(100).optional(),
   currency: currencySchema.optional(),
   accountType: accountTypeSchema.optional(),
-  ownerId: z.number().int().positive().optional(),
+  ownerId: z.string().regex(/^\d{1,6}$/).optional(),
   isActive: z.boolean().optional(),
   minBalance: z.number().min(0).optional(),
   maxBalance: z.number().min(0).optional(),

@@ -174,10 +174,12 @@ export function formatDate(date: Date | string): string {
 }
 
 /**
- * Generates a random account number
+ * Generates a random account number with leading zeros
  */
 export function generateAccountNumber(): string {
-  return Math.random().toString().slice(2, 12);
+  // Generate a 10-digit account number with leading zeros
+  const accountNumber = Math.floor(Math.random() * 10000000000).toString().padStart(10, '0');
+  return accountNumber;
 }
 
 /**

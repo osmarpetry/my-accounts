@@ -14,11 +14,11 @@ import { BankAccount } from "@/types";
 
 describe("Redux Store", () => {
   const mockAccount: BankAccount = {
-    id: "test-1",
+    id: "test-account",
+    ownerId: "123456",
     accountNumber: "1234567890",
     accountType: "checking",
     accountHolder: "Test User",
-    ownerId: 123456,
     balance: 1000,
     currency: "USD",
     isActive: true,

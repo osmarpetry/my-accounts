@@ -10,7 +10,7 @@ export type Currency = "USD" | "EUR" | "GBP" | "CHF" | "CNY" | "SEK" | "NOK" | "
 
 export interface BankAccount {
   id: string;
-  ownerId: number; // Numeric owner ID (minimal requirement)
+  ownerId: string; // String owner ID to preserve leading zeros like "000123"
   accountNumber: string;
   accountType: AccountType;
   accountHolder: string;
@@ -129,7 +129,7 @@ export interface SearchCriteria {
   query?: string | undefined;
   currency?: Currency | undefined;
   accountType?: AccountType | undefined;
-  ownerId?: number | undefined;
+  ownerId?: string | undefined;
   isActive?: boolean | undefined;
   minBalance?: number | undefined;
   maxBalance?: number | undefined;

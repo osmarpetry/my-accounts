@@ -246,16 +246,18 @@ export function SearchFilters({
                   {t("ownerId")}
                 </Label>
                 <Input
-                  type="number"
-                  placeholder="123456"
-                  value={searchCriteria.ownerId?.toString() || ""}
-                  onChange={(e) => 
-                    updateCriteria({ 
-                      ownerId: e.target.value ? parseInt(e.target.value) : undefined 
-                    })
-                  }
-                  min="100000"
-                  max="999999"
+                  type="text"
+                  placeholder="000123"
+                  value={searchCriteria.ownerId || ""}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9]/g, "");
+                    if (value.length <= 6) {
+                      updateCriteria({ 
+                        ownerId: value || undefined 
+                      });
+                    }
+                  }}
+                  maxLength={6}
                 />
               </div>
 

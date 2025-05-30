@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import {
-  selectAccountsWithDates,
+  selectAccounts,
   updateAccount,
   setLoading,
   setError,
@@ -43,7 +43,7 @@ export function TransferForm({
   onSuccess,
 }: TransferFormProps) {
   const dispatch = useDispatch();
-  const accounts = useSelector(selectAccountsWithDates);
+  const accounts = useSelector(selectAccounts);
   const { t } = useTranslation();
   const { showTransferSuccess } = useToast();
 
@@ -353,7 +353,7 @@ export function TransferForm({
                             {t(selectedAccount.accountType)}
                           </Badge>
                           <span className="text-xs text-muted-foreground">
-                            #{selectedAccount.accountNumber}
+                            #{selectedAccount.accountNumber} • {t("ownerId")}: {selectedAccount.ownerId}
                           </span>
                         </div>
                       ) : null;
@@ -432,7 +432,7 @@ export function TransferForm({
                               {t(selectedAccount.accountType)}
                             </Badge>
                             <span className="text-xs text-muted-foreground">
-                              #{selectedAccount.accountNumber}
+                              #{selectedAccount.accountNumber} • {t("ownerId")}: {selectedAccount.ownerId}
                             </span>
                           </div>
                         ) : null;

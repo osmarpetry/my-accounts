@@ -46,7 +46,7 @@ describe('MSW Integration', () => {
 
   it('should intercept POST /api/accounts requests', async () => {
     const newAccount = {
-      ownerId: 999999,
+      ownerId: "999999",
       accountHolder: 'Test User',
       accountType: 'checking',
       initialBalance: 1000,
@@ -66,7 +66,7 @@ describe('MSW Integration', () => {
     expect(response.status).toBe(201);
     expect(data.success).toBe(true);
     expect(data.data.accountHolder).toBe('Test User');
-    expect(data.data.ownerId).toBe(999999);
+    expect(data.data.ownerId).toBe("999999");
     expect(data.message).toBe('Account created successfully');
   });
 
@@ -129,7 +129,7 @@ describe('MSW Integration', () => {
   it('should handle currency mismatch in transfers', async () => {
     // Create two accounts with different currencies
     const account1Data = {
-      ownerId: 555555,
+      ownerId: "555555",
       accountHolder: 'USD Account Holder',
       accountType: 'checking',
       initialBalance: 1000,
@@ -137,7 +137,7 @@ describe('MSW Integration', () => {
     };
 
     const account2Data = {
-      ownerId: 666666,
+      ownerId: "666666",
       accountHolder: 'EUR Account Holder',
       accountType: 'savings',
       initialBalance: 800,
@@ -189,7 +189,7 @@ describe('MSW Integration', () => {
   it('should prevent deleting account with positive balance', async () => {
     // Create an account with positive balance
     const accountData = {
-      ownerId: 777777,
+      ownerId: "777777",
       accountHolder: 'Test Account Holder',
       accountType: 'checking',
       initialBalance: 500,
@@ -217,9 +217,9 @@ describe('MSW Integration', () => {
   it('should allow deleting account with zero balance', async () => {
     // Create an account with zero balance
     const accountData = {
-      ownerId: 888888,
+      ownerId: "888888",
       accountHolder: 'Zero Balance Account',
-      accountType: 'checking',
+      accountType: 'savings',
       initialBalance: 0,
       currency: 'USD'
     };

@@ -59,7 +59,7 @@ export function AccountForm({
   }));
 
   const [formData, setFormData] = useState({
-    ownerId: account?.ownerId?.toString() || (Math.floor(Math.random() * 900000) + 100000).toString(),
+    ownerId: account?.ownerId || (Math.floor(Math.random() * 900000) + 100000).toString().padStart(6, '0'),
     accountHolder: account?.accountHolder || "",
     accountType: account?.accountType || ("checking" as AccountType),
     balance: account?.balance?.toString() || "0",
@@ -86,7 +86,7 @@ export function AccountForm({
         if (!isEditing) { // Only validate owner ID during creation
           if (!ownerIdValue) {
             newErrors.ownerId = t("fieldRequired");
-          } else if (!/^\d+$/.test(ownerIdValue)) {
+          } else if (!/^\d{6}$/.test(ownerIdValue)) {
             newErrors.ownerId = t("ownerIdInvalid");
           } else if (parseInt(ownerIdValue) < 100000 || parseInt(ownerIdValue) > 999999) {
             newErrors.ownerId = t("ownerIdRange");
@@ -187,7 +187,7 @@ export function AccountForm({
   };
 
   const generateRandomOwnerId = () => {
-    const newOwnerId = (Math.floor(Math.random() * 900000) + 100000).toString();
+    const newOwnerId = (Math.floor(Math.random() * 900000) + 100000).toString().padStart(6, '0');
     setFormData({ ...formData, ownerId: newOwnerId });
     setTouched({ ...touched, ownerId: false });
     setErrors({ ...errors, ownerId: "" });
@@ -272,7 +272,7 @@ export function AccountForm({
       } else {
         // For creating, send all required fields including ownerId
         const createData = {
-          ownerId: parseInt(formData.ownerId),
+          ownerId: formData.ownerId,
           accountHolder: formData.accountHolder.trim(),
           accountType: formData.accountType,
           initialBalance: parseFloat(formData.balance),

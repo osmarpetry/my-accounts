@@ -15,7 +15,7 @@ const mockAccounts: BankAccount[] = [
     balance: 1500.50,
     currency: 'USD' as Currency,
     isActive: true,
-    ownerId: 123456,
+    ownerId: '123456',
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-15T00:00:00Z'
   },
@@ -27,7 +27,7 @@ const mockAccounts: BankAccount[] = [
     balance: 2500.00,
     currency: 'EUR' as Currency,
     isActive: true,
-    ownerId: 234567,
+    ownerId: '234567',
     createdAt: '2024-01-02T00:00:00Z',
     updatedAt: '2024-01-20T00:00:00Z'
   },
@@ -39,7 +39,7 @@ const mockAccounts: BankAccount[] = [
     balance: 0,
     currency: 'GBP' as Currency,
     isActive: false,
-    ownerId: 345678,
+    ownerId: '345678',
     createdAt: '2024-01-03T00:00:00Z',
     updatedAt: '2024-01-10T00:00:00Z'
   },
@@ -51,7 +51,7 @@ const mockAccounts: BankAccount[] = [
     balance: 750.25,
     currency: 'USD' as Currency,
     isActive: true,
-    ownerId: 456789,
+    ownerId: '456789',
     createdAt: '2024-01-04T00:00:00Z',
     updatedAt: '2024-01-25T00:00:00Z'
   }

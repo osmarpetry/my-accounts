@@ -25,11 +25,10 @@ import {
 import { BankAccount, AccountType, Currency } from "@/types";
 import { X, AlertTriangle, CheckCircle, CreditCard, User } from "lucide-react";
 import { 
-  formatCurrency, 
-  getSupportedCurrencies, 
-  getCurrencyName, 
+  formatCurrencyWithSymbol,
   getCurrencySymbol,
-  generateOwnerId 
+  getCurrencyName,
+  getSupportedCurrencies,
 } from "@/lib/utils";
 
 interface AccountFormProps {
@@ -60,7 +59,7 @@ export function AccountForm({
   }));
 
   const [formData, setFormData] = useState({
-    ownerId: account?.ownerId?.toString() || "",
+    ownerId: account?.ownerId?.toString() || (Math.floor(Math.random() * 900000) + 100000).toString(),
     accountHolder: account?.accountHolder || "",
     accountType: account?.accountType || ("checking" as AccountType),
     balance: account?.balance?.toString() || "0",
@@ -188,10 +187,10 @@ export function AccountForm({
   };
 
   const generateRandomOwnerId = () => {
-    const newOwnerId = generateOwnerId().toString();
+    const newOwnerId = (Math.floor(Math.random() * 900000) + 100000).toString();
     setFormData({ ...formData, ownerId: newOwnerId });
-    setTouched({ ...touched, ownerId: true });
-    validateField("ownerId", newOwnerId);
+    setTouched({ ...touched, ownerId: false });
+    setErrors({ ...errors, ownerId: "" });
   };
 
   const validateForm = () => {
@@ -368,7 +367,7 @@ export function AccountForm({
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{account.accountHolder}</span>
-                  <span className="font-semibold">{formatCurrency(account.balance, account.currency)}</span>
+                  <span className="font-semibold">{formatCurrencyWithSymbol(account.balance, account.currency)}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm text-muted-foreground mt-1">
                   <span>{t(account.accountType)} • {account.currency}</span>
@@ -401,6 +400,7 @@ export function AccountForm({
                       placeholder="123456"
                       className={`flex-1 ${errors.ownerId ? "border-destructive" : ""}`}
                       maxLength={6}
+                      disabled={true}
                     />
                     <Button
                       type="button"
@@ -599,7 +599,7 @@ export function AccountForm({
         onOpenChange={setShowDeactivationWarning}
         type="warning"
         title={t("deactivateAccountWithBalance")}
-        description={t("balanceDeactivateWarning", { balance: account ? formatCurrency(account.balance, account.currency) : '' })}
+        description={t("balanceDeactivateWarning", { balance: account ? formatCurrencyWithSymbol(account.balance, account.currency) : '' })}
         onConfirm={handleConfirmDeactivation}
         onCancel={handleCancelDeactivation}
         confirmText={t("deactivateAccount")}

@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SearchCriteria, AccountType, Currency } from "@/types";
+import { SearchCriteria, AccountType, Currency, SortOption } from "@/types";
 import { 
   getSupportedCurrencies, 
   getCurrencySymbol, 
@@ -126,7 +126,7 @@ export function SearchFilters({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {/* Main Search */}
+        {/* Main Search - Full Width */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -369,4 +369,6 @@ export function SearchFilters({
       </CardContent>
     </Card>
   );
-} 
+}
+
+export type { SortOption }; 

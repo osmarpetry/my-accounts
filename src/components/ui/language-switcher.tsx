@@ -48,9 +48,15 @@ export function LanguageToggle({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-9 w-9 p-0 hover:bg-accent hover:text-accent-foreground transition-colors"
+                className="h-9 px-3 hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-2"
               >
-                <Languages className="h-4 w-4" />
+                <span className="text-base" role="img" aria-label={`${currentLanguage.name} flag`}>
+                  {currentLanguage.flag}
+                </span>
+                <span className="hidden sm:inline text-sm font-medium">
+                  {currentLanguage.nativeName}
+                </span>
+                <Languages className="h-3 w-3 opacity-50" />
                 <span className="sr-only">{t("language")}</span>
               </Button>
             </DropdownMenuTrigger>

@@ -38,6 +38,17 @@ export interface Transaction {
   convertedCurrency?: Currency;
 }
 
+export interface Transfer {
+  id: string;
+  fromAccountId: string;
+  toAccountId: string;
+  amount: number;
+  description: string;
+  currency: Currency;
+  date: string;
+  createdAt: string;
+}
+
 // UI helper types that convert ISO strings to Date objects
 export interface BankAccountWithDates
   extends Omit<BankAccount, "createdAt" | "updatedAt"> {
@@ -133,3 +144,15 @@ export interface CurrencyConversion {
   exchangeRate: number;
   timestamp: string;
 }
+
+export type SortOption = 
+  | "updatedAt_desc" 
+  | "updatedAt_asc" 
+  | "createdAt_desc" 
+  | "createdAt_asc"
+  | "accountHolder_asc" 
+  | "accountHolder_desc"
+  | "balance_desc"
+  | "balance_asc";
+
+export type ViewMode = "list" | "grid";

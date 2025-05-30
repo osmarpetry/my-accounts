@@ -27,7 +27,14 @@ import { Badge } from "@/components/ui/badge";
 import { AccountForm } from "@/components/forms/account-form";
 import { TransferForm } from "@/components/forms/transfer-form";
 import { SearchFilters } from "@/components/ui/search-filters";
-import { formatCurrency, formatDate, searchAccounts } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { formatCurrency, formatDate, searchAccounts, sortAccounts } from "@/lib/utils";
 import {
   Plus,
   CreditCard,
@@ -40,8 +47,13 @@ import {
   Wallet,
   PiggyBank,
   ArrowLeft,
+  LayoutGrid,
+  List,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpDown,
 } from "lucide-react";
-import { BankAccount, AccountType, SearchCriteria } from "@/types";
+import { BankAccount, AccountType, SearchCriteria, SortOption, ViewMode } from "@/types";
 
 // Account type icons following the requested design
 const getAccountTypeIcon = (accountType: AccountType) => {
@@ -56,6 +68,27 @@ const getAccountTypeIcon = (accountType: AccountType) => {
       return <Wallet className="h-5 w-5 text-primary" />;
   }
 };
+
+const sortOptions: { value: SortOption; label: string }[] = [
+  { value: "updatedAt_desc", label: "Recently Updated" },
+  { value: "updatedAt_asc", label: "Oldest Updated" },
+  { value: "createdAt_desc", label: "Newest First" },
+  { value: "createdAt_asc", label: "Oldest First" },
+  { value: "accountHolder_asc", label: "Name A-Z" },
+  { value: "accountHolder_desc", label: "Name Z-A" },
+  { value: "balance_desc", label: "Highest Balance" },
+  { value: "balance_asc", label: "Lowest Balance" },
+];
+
+const ITEMS_PER_PAGE_OPTIONS = [
+  { value: "6", label: "6 per page" },
+  { value: "12", label: "12 per page" },
+  { value: "24", label: "24 per page" },
+  { value: "50", label: "50 per page" },
+  { value: "all", label: "Show all" },
+];
+
+const DEFAULT_ITEMS_PER_PAGE = 6;
 
 // Simple confirmation dialog component
 interface ConfirmDialogProps {
@@ -146,6 +179,10 @@ export default function AllAccountsPage() {
   const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
   const [editingAccount, setEditingAccount] = useState<BankAccount | undefined>();
   const [searchCriteria, setSearchCriteria] = useState<SearchCriteria>({});
+  const [sortBy, setSortBy] = useState<SortOption>("updatedAt_desc");
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState<string>("6");
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     accountId: string;
@@ -211,9 +248,22 @@ export default function AllAccountsPage() {
     fetchAccounts();
   }, [dispatch]);
 
-  // Filter accounts based on search criteria
+  // Filter and sort accounts based on search criteria and sort option
   const filteredAccounts = searchAccounts(accounts, searchCriteria);
+  const sortedFilteredAccounts = sortAccounts(filteredAccounts, sortBy);
   const activeAccounts = accounts.filter((acc) => acc.isActive).length;
+
+  // Pagination logic
+  const itemsPerPageNumber = itemsPerPage === "all" ? sortedFilteredAccounts.length : parseInt(itemsPerPage);
+  const totalPages = itemsPerPage === "all" ? 1 : Math.ceil(sortedFilteredAccounts.length / itemsPerPageNumber);
+  const startIndex = itemsPerPage === "all" ? 0 : (currentPage - 1) * itemsPerPageNumber;
+  const endIndex = itemsPerPage === "all" ? sortedFilteredAccounts.length : startIndex + itemsPerPageNumber;
+  const paginatedAccounts = sortedFilteredAccounts.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters or items per page change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchCriteria, sortBy, itemsPerPage]);
 
   const handleCreateAccount = () => {
     setEditingAccount(undefined);
@@ -343,14 +393,14 @@ export default function AllAccountsPage() {
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
           <Link href="/">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {t("back")}
-            </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {t("back")}
+          </Button>
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-foreground">
@@ -377,7 +427,7 @@ export default function AllAccountsPage() {
         searchCriteria={searchCriteria}
         onSearchChange={setSearchCriteria}
         onClearFilters={handleClearFilters}
-        resultCount={filteredAccounts.length}
+        resultCount={sortedFilteredAccounts.length}
         totalCount={accounts.length}
       />
 
@@ -421,23 +471,91 @@ export default function AllAccountsPage() {
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{filteredAccounts.length}</div>
+            <div className="text-2xl font-bold">{sortedFilteredAccounts.length}</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Accounts List */}
+      {/* Accounts Section */}
       <Card>
         <CardHeader>
-          <CardTitle>{t("accounts")}</CardTitle>
-          <CardDescription>
-            {filteredAccounts.length === accounts.length
-              ? `${t("showing")} ${t("allAccounts").toLowerCase()} ${accounts.length} ${t("accounts")}`
-              : `${t("showing")} ${filteredAccounts.length} ${t("of")} ${accounts.length} ${t("accounts")}`}
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                {t("accounts")}
+              </CardTitle>
+              <CardDescription className="mt-1">
+                {sortedFilteredAccounts.length === 0 
+                  ? "No accounts found"
+                  : itemsPerPage === "all" 
+                    ? `Showing all ${sortedFilteredAccounts.length} accounts`
+                    : `Showing ${paginatedAccounts.length} of ${sortedFilteredAccounts.length} accounts (Page ${currentPage} of ${totalPages})`}
+              </CardDescription>
+            </div>
+            
+            {/* Sort, View Toggle, and Items Per Page */}
+            <div className="flex items-center gap-3">
+              {/* Items Per Page */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground hidden sm:inline">Show:</span>
+                <Select value={itemsPerPage} onValueChange={setItemsPerPage}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Sort Dropdown */}
+              <div className="flex items-center gap-2">
+                <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue>
+                      {sortOptions.find(option => option.value === sortBy)?.label}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sortOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* View Toggle */}
+              <div className="flex items-center border rounded-md">
+                <Button
+                  variant={viewMode === "list" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className="rounded-r-none px-3"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                  className="rounded-l-none px-3"
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          {filteredAccounts.length === 0 ? (
+          {sortedFilteredAccounts.length === 0 ? (
             <div className="text-center py-8">
               <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
@@ -460,80 +578,219 @@ export default function AllAccountsPage() {
               )}
             </div>
           ) : (
-            <div className="space-y-4">
-              {filteredAccounts.map((account) => (
-                <div
-                  key={account.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                      {getAccountTypeIcon(account.accountType)}
+            <>
+              {/* Accounts Display */}
+              {viewMode === "list" ? (
+                <div className="space-y-4">
+                  {paginatedAccounts.map((account) => (
+                    <div
+                      key={account.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                          {getAccountTypeIcon(account.accountType)}
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-foreground">
+                            {account.accountHolder}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {account.accountNumber} • {t(account.accountType)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {t("ownerId")}: {account.ownerId} • {t("createdAt")}: {formatDate(account.createdAt)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <div className="font-semibold text-lg">
+                            {formatCurrency(account.balance, account.currency)}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge
+                              variant={account.isActive ? "default" : "secondary"}
+                            >
+                              {account.isActive ? t("active") : t("inactive")}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {account.currency}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          {account.isActive && accounts.filter(acc => acc.isActive && acc.id !== account.id).length > 0 && (
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleTransferClick(account)}
+                              className="h-8 w-8"
+                              title={t("transfer")}
+                            >
+                              <ArrowRightLeft className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleEditAccount(account)}
+                            className="h-8 w-8"
+                            data-testid="edit-account-button"
+                            title={t("edit")}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleDeleteClick(account)}
+                            className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
+                            title={t("delete")}
+                          >
+                            <Trash2 className="h-4 w-4" data-testid="trash-icon" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-medium text-foreground">
-                        {account.accountHolder}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {account.accountNumber} • {t(account.accountType)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {t("ownerId")}: {account.ownerId} • {t("createdAt")}: {formatDate(account.createdAt)}
-                      </p>
-                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {paginatedAccounts.map((account) => (
+                    <Card key={account.id} className="hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                              {getAccountTypeIcon(account.accountType)}
+                            </div>
+                            <div>
+                              <CardTitle className="text-base">{account.accountHolder}</CardTitle>
+                              <p className="text-sm text-muted-foreground">{t(account.accountType)}</p>
+                            </div>
+                          </div>
+                          <Badge variant={account.isActive ? "default" : "secondary"}>
+                            {account.isActive ? t("active") : t("inactive")}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Account Number</p>
+                          <p className="font-mono text-sm">{account.accountNumber}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Balance</p>
+                          <p className="text-2xl font-bold">
+                            {formatCurrency(account.balance, account.currency)}
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                          <p>Owner: {account.ownerId}</p>
+                          <p>Currency: {account.currency}</p>
+                        </div>
+                        <div className="flex gap-2 pt-2">
+                          {account.isActive && accounts.filter(acc => acc.isActive && acc.id !== account.id).length > 0 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleTransferClick(account)}
+                              className="flex-1"
+                            >
+                              <ArrowRightLeft className="h-4 w-4 mr-1" />
+                              Transfer
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditAccount(account)}
+                            className="flex-1"
+                            data-testid="edit-account-button"
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteClick(account)}
+                            className="hover:bg-destructive hover:text-destructive-foreground"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              {/* Pagination */}
+              {totalPages > 1 && itemsPerPage !== "all" && (
+                <div className="flex items-center justify-between pt-6 border-t">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {startIndex + 1} to {Math.min(endIndex, sortedFilteredAccounts.length)} of {sortedFilteredAccounts.length} accounts
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="font-semibold text-lg">
-                        {formatCurrency(account.balance, account.currency)}
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge
-                          variant={account.isActive ? "default" : "secondary"}
-                        >
-                          {account.isActive ? t("active") : t("inactive")}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {account.currency}
-                        </span>
-                      </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                        if (
+                          page === 1 ||
+                          page === totalPages ||
+                          (page >= currentPage - 1 && page <= currentPage + 1)
+                        ) {
+                          return (
+                            <Button
+                              key={page}
+                              variant={currentPage === page ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentPage(page)}
+                              className="w-8 h-8 p-0"
+                            >
+                              {page}
+                            </Button>
+                          );
+                        } else if (page === currentPage - 2 || page === currentPage + 2) {
+                          return <span key={page} className="px-2">...</span>;
+                        }
+                        return null;
+                      })}
                     </div>
-                    <div className="flex gap-2">
-                      {account.isActive && accounts.filter(acc => acc.isActive && acc.id !== account.id).length > 0 && (
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handleTransferClick(account)}
-                          className="h-8 w-8"
-                          title={t("transfer")}
-                        >
-                          <ArrowRightLeft className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleEditAccount(account)}
-                        className="h-8 w-8"
-                        data-testid="edit-account-button"
-                        title={t("edit")}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleDeleteClick(account)}
-                        className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
-                        title={t("delete")}
-                      >
-                        <Trash2 className="h-4 w-4" data-testid="trash-icon" />
-                      </Button>
-                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-              ))}
-            </div>
+              )}
+              
+              {/* Show all indicator */}
+              {itemsPerPage === "all" && sortedFilteredAccounts.length > 0 && (
+                <div className="pt-6 border-t">
+                  <div className="text-sm text-muted-foreground text-center">
+                    Showing all {sortedFilteredAccounts.length} accounts
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

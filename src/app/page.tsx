@@ -232,7 +232,10 @@ export default function HomePage() {
 
   // Calculate stats
   const activeAccounts = accounts.filter((account) => account.isActive).length;
-  const displayAccounts = accounts.slice(0, 3); // Show up to 3 accounts instead of 1
+  
+  // Sort accounts by recently updated first and show up to 3 accounts
+  const sortedAccounts = [...accounts].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+  const displayAccounts = sortedAccounts.slice(0, 3);
 
   const handleCreateAccount = () => {
     setEditingAccount(undefined);

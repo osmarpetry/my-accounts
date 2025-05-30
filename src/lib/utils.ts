@@ -276,3 +276,32 @@ export function getCurrencyConversionPreview(
     isDifferent: true,
   };
 }
+
+/**
+ * Sort accounts based on criteria
+ */
+export function sortAccounts<T extends BankAccount>(accounts: T[], sortBy: string): T[] {
+  const sortedAccounts = [...accounts];
+  
+  switch (sortBy) {
+    case "updatedAt_desc":
+      return sortedAccounts.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    case "updatedAt_asc":
+      return sortedAccounts.sort((a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
+    case "createdAt_desc":
+      return sortedAccounts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    case "createdAt_asc":
+      return sortedAccounts.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    case "accountHolder_asc":
+      return sortedAccounts.sort((a, b) => a.accountHolder.localeCompare(b.accountHolder));
+    case "accountHolder_desc":
+      return sortedAccounts.sort((a, b) => b.accountHolder.localeCompare(a.accountHolder));
+    case "balance_desc":
+      return sortedAccounts.sort((a, b) => b.balance - a.balance);
+    case "balance_asc":
+      return sortedAccounts.sort((a, b) => a.balance - b.balance);
+    default:
+      // Default to recently updated first
+      return sortedAccounts.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+  }
+}

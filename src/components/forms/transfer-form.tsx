@@ -317,7 +317,24 @@ export function TransferForm({
                     id="toAccount"
                     className={errors.toAccountId ? "border-destructive" : ""}
                   >
-                    <SelectValue placeholder={t("toAccount")} />
+                    <SelectValue placeholder={t("toAccount")}>
+                      {formData.toAccountId && (() => {
+                        const selectedAccount = availableAccounts.find(acc => acc.id === formData.toAccountId);
+                        return selectedAccount ? (
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">
+                              {selectedAccount.accountHolder}
+                            </span>
+                            <Badge variant="outline" className="text-xs">
+                              {t(selectedAccount.accountType)}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              #{selectedAccount.accountNumber}
+                            </span>
+                          </div>
+                        ) : null;
+                      })()}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {availableAccounts.map((account) => (

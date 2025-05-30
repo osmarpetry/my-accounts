@@ -52,8 +52,11 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUpDown,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
 import { BankAccount, AccountType, SearchCriteria, SortOption, ViewMode } from "@/types";
+import { useToast } from "@/components/ui/toast";
 
 // Account type icons following the requested design
 const getAccountTypeIcon = (accountType: AccountType) => {
@@ -173,6 +176,7 @@ export default function AllAccountsPage() {
   const totalBalance = useSelector(selectTotalBalance);
 
   const { t } = useTranslation();
+  const { showDeleteSuccess, showScrollToTop, hideScrollToTop } = useToast();
 
   const [showAccountForm, setShowAccountForm] = useState(false);
   const [showTransferForm, setShowTransferForm] = useState(false);
@@ -187,11 +191,13 @@ export default function AllAccountsPage() {
     open: boolean;
     accountId: string;
     accountName: string;
+    accountNumber: string;
     loading: boolean;
   }>({
     open: false,
     accountId: "",
     accountName: "",
+    accountNumber: "",
     loading: false,
   });
   
@@ -265,6 +271,21 @@ export default function AllAccountsPage() {
     setCurrentPage(1);
   }, [searchCriteria, sortBy, itemsPerPage]);
 
+  // Scroll detection for scroll-to-top button
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      if (scrollTop > 400) {
+        showScrollToTop();
+      } else {
+        hideScrollToTop();
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [showScrollToTop, hideScrollToTop]);
+
   const handleCreateAccount = () => {
     setEditingAccount(undefined);
     setShowAccountForm(true);
@@ -292,6 +313,7 @@ export default function AllAccountsPage() {
       open: true,
       accountId: account.id,
       accountName: account.accountHolder,
+      accountNumber: account.accountNumber,
       loading: false,
     });
   };
@@ -308,7 +330,10 @@ export default function AllAccountsPage() {
 
       if (data.success) {
         dispatch(deleteAccount(deleteDialog.accountId));
-        setDeleteDialog({ open: false, accountId: "", accountName: "", loading: false });
+        setDeleteDialog({ open: false, accountId: "", accountName: "", accountNumber: "", loading: false });
+        
+        // Show success toast
+        showDeleteSuccess(deleteDialog.accountName, deleteDialog.accountNumber);
       } else {
         dispatch(setError(data.error || "Failed to delete account"));
         setDeleteDialog((prev) => ({ ...prev, loading: false }));
@@ -412,6 +437,15 @@ export default function AllAccountsPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <Button
+            onClick={() => setShowTransferForm(true)}
+            variant="outline"
+            className="flex items-center gap-2"
+            disabled={accounts.filter(acc => acc.isActive).length < 2}
+          >
+            <ArrowRightLeft className="h-4 w-4" />
+            {t("transfer")}
+          </Button>
           <Button
             onClick={handleCreateAccount}
             className="flex items-center gap-2"
@@ -734,6 +768,19 @@ export default function AllAccountsPage() {
                     Showing {startIndex + 1} to {Math.min(endIndex, sortedFilteredAccounts.length)} of {sortedFilteredAccounts.length} accounts
                   </div>
                   <div className="flex items-center gap-2">
+                    {/* First Page Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      className="hidden sm:flex"
+                    >
+                      <ChevronsLeft className="h-4 w-4" />
+                      First
+                    </Button>
+                    
+                    {/* Previous Button */}
                     <Button
                       variant="outline"
                       size="sm"
@@ -741,9 +788,10 @@ export default function AllAccountsPage() {
                       disabled={currentPage === 1}
                     >
                       <ChevronLeft className="h-4 w-4" />
-                      Previous
+                      <span className="hidden sm:inline">Previous</span>
                     </Button>
                     
+                    {/* Page Numbers */}
                     <div className="flex items-center gap-1">
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
                         if (
@@ -763,20 +811,33 @@ export default function AllAccountsPage() {
                             </Button>
                           );
                         } else if (page === currentPage - 2 || page === currentPage + 2) {
-                          return <span key={page} className="px-2">...</span>;
+                          return <span key={page} className="px-2 text-muted-foreground">...</span>;
                         }
                         return null;
                       })}
                     </div>
 
+                    {/* Next Button */}
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                       disabled={currentPage === totalPages}
                     >
-                      Next
+                      <span className="hidden sm:inline">Next</span>
                       <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    
+                    {/* Last Page Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      className="hidden sm:flex"
+                    >
+                      Last
+                      <ChevronsRight className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -805,9 +866,9 @@ export default function AllAccountsPage() {
       )}
 
       {/* Transfer Form Modal */}
-      {showTransferForm && selectedAccount && (
+      {showTransferForm && (
         <TransferForm
-          fromAccount={selectedAccount}
+          {...(selectedAccount && { fromAccount: selectedAccount })}
           onClose={handleFormClose}
           onSuccess={handleFormSuccess}
         />

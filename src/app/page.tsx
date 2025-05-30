@@ -42,8 +42,10 @@ import {
   PiggyBank,
   Eye,
   ArrowRight,
+  Send,
 } from "lucide-react";
 import { BankAccount, AccountType } from "@/types";
+import { useToast } from "@/components/ui/toast";
 
 // Account type icons following the requested design
 const getAccountTypeIcon = (accountType: AccountType) => {
@@ -158,6 +160,7 @@ export default function HomePage() {
   const defaultCurrency = useSelector(selectDefaultCurrency);
 
   const { t } = useTranslation();
+  const { showDeleteSuccess, showScrollToTop, hideScrollToTop } = useToast();
 
   const [showAccountForm, setShowAccountForm] = useState(false);
   const [showTransferForm, setShowTransferForm] = useState(false);
@@ -169,11 +172,13 @@ export default function HomePage() {
     open: boolean;
     accountId: string;
     accountName: string;
+    accountNumber: string;
     loading: boolean;
   }>({
     open: false,
     accountId: "",
     accountName: "",
+    accountNumber: "",
     loading: false,
   });
   
@@ -230,6 +235,21 @@ export default function HomePage() {
     fetchAccounts();
   }, [dispatch]);
 
+  // Scroll detection for scroll-to-top button
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      if (scrollTop > 400) {
+        showScrollToTop();
+      } else {
+        hideScrollToTop();
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [showScrollToTop, hideScrollToTop]);
+
   // Calculate stats
   const activeAccounts = accounts.filter((account) => account.isActive).length;
   
@@ -264,6 +284,7 @@ export default function HomePage() {
       open: true,
       accountId: account.id,
       accountName: account.accountHolder,
+      accountNumber: account.accountNumber,
       loading: false,
     });
   };
@@ -286,8 +307,12 @@ export default function HomePage() {
           open: false,
           accountId: "",
           accountName: "",
+          accountNumber: "",
           loading: false,
         });
+        
+        // Show success toast
+        showDeleteSuccess(deleteDialog.accountName, deleteDialog.accountNumber);
       } else {
         dispatch(setError(data.error || "Failed to delete account"));
         setDeleteDialog((prev) => ({ ...prev, loading: false }));
@@ -396,6 +421,15 @@ export default function HomePage() {
           <p className="text-muted-foreground mt-1">{t("accounts")}</p>
         </div>
         <div className="flex items-center gap-3">
+          <Button
+            onClick={() => setShowTransferForm(true)}
+            variant="outline"
+            className="flex items-center gap-2"
+            disabled={accounts.filter(acc => acc.isActive).length < 2}
+          >
+            <ArrowRightLeft className="h-4 w-4" />
+            {t("transfer")}
+          </Button>
           <Button
             onClick={handleCreateAccount}
             className="flex items-center gap-2"
@@ -631,9 +665,9 @@ export default function HomePage() {
       )}
 
       {/* Transfer Form Modal */}
-      {showTransferForm && selectedAccount && (
+      {showTransferForm && (
         <TransferForm
-          fromAccount={selectedAccount}
+          {...(selectedAccount && { fromAccount: selectedAccount })}
           onClose={handleFormClose}
           onSuccess={handleFormSuccess}
         />

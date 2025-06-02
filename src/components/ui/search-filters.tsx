@@ -164,7 +164,18 @@ export function SearchFilters({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={t("filterByType")} />
+                    <SelectValue 
+                      placeholder={t("filterByType")}
+                      displayValue={searchCriteria.accountType ? (() => {
+                        const selectedType = accountTypes.find(type => type.value === searchCriteria.accountType);
+                        return selectedType ? (
+                          <div className="flex items-center gap-2">
+                            <selectedType.icon className="h-4 w-4" />
+                            <span>{t(selectedType.value)}</span>
+                          </div>
+                        ) : undefined;
+                      })() : undefined}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">All Types</SelectItem>
@@ -193,7 +204,20 @@ export function SearchFilters({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={t("filterByCurrency")} />
+                    <SelectValue 
+                      placeholder={t("filterByCurrency")}
+                      displayValue={searchCriteria.currency ? (
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">
+                            {getCurrencySymbol(searchCriteria.currency)}
+                          </span>
+                          <span>{searchCriteria.currency}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {getCurrencyName(searchCriteria.currency)}
+                          </span>
+                        </div>
+                      ) : undefined}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">All Currencies</SelectItem>
@@ -226,7 +250,12 @@ export function SearchFilters({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={t("filterByStatus")} />
+                    <SelectValue 
+                      placeholder={t("filterByStatus")}
+                      displayValue={searchCriteria.isActive !== undefined ? (
+                        searchCriteria.isActive ? t("active") : t("inactive")
+                      ) : undefined}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">All Statuses</SelectItem>

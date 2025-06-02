@@ -341,8 +341,9 @@ export function TransferForm({
                   id="fromAccount"
                   className={errors.fromAccountId ? "border-destructive" : ""}
                 >
-                  <SelectValue placeholder={t("fromAccount")}>
-                    {formData.fromAccountId && (() => {
+                  <SelectValue 
+                    placeholder={t("fromAccount")}
+                    displayValue={formData.fromAccountId ? (() => {
                       const selectedAccount = availableFromAccounts.find(acc => acc.id === formData.fromAccountId);
                       return selectedAccount ? (
                         <div className="flex items-center gap-2">
@@ -357,8 +358,8 @@ export function TransferForm({
                           </span>
                         </div>
                       ) : null;
-                    })()}
-                  </SelectValue>
+                    })() : undefined}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {availableFromAccounts.map((account) => (
@@ -420,8 +421,9 @@ export function TransferForm({
                     id="toAccount"
                     className={errors.toAccountId ? "border-destructive" : ""}
                   >
-                    <SelectValue placeholder={t("toAccount")}>
-                      {formData.toAccountId && (() => {
+                    <SelectValue 
+                      placeholder={t("toAccount")}
+                      displayValue={formData.toAccountId ? (() => {
                         const selectedAccount = availableToAccounts.find(acc => acc.id === formData.toAccountId);
                         return selectedAccount ? (
                           <div className="flex items-center gap-2">
@@ -436,8 +438,8 @@ export function TransferForm({
                             </span>
                           </div>
                         ) : null;
-                      })()}
-                    </SelectValue>
+                      })() : undefined}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {availableToAccounts.map((account) => (

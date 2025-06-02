@@ -535,7 +535,12 @@ export default function AllAccountsPage() {
                 <span className="text-sm text-muted-foreground hidden sm:inline">Show:</span>
                 <Select value={itemsPerPage} onValueChange={setItemsPerPage}>
                   <SelectTrigger className="w-[120px]">
-                    <SelectValue />
+                    <SelectValue 
+                      displayValue={(() => {
+                        const selectedOption = ITEMS_PER_PAGE_OPTIONS.find(option => option.value === itemsPerPage);
+                        return selectedOption ? selectedOption.label : itemsPerPage;
+                      })()}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {ITEMS_PER_PAGE_OPTIONS.map((option) => (
@@ -552,9 +557,12 @@ export default function AllAccountsPage() {
                 <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
                 <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
                   <SelectTrigger className="w-[200px]">
-                    <SelectValue>
-                      {sortOptions.find(option => option.value === sortBy)?.label}
-                    </SelectValue>
+                    <SelectValue
+                      displayValue={(() => {
+                        const selectedOption = sortOptions.find(option => option.value === sortBy);
+                        return selectedOption ? selectedOption.label : sortBy;
+                      })()}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {sortOptions.map((option) => (

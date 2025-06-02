@@ -133,7 +133,13 @@ export function AccountFilters({
                 onValueChange={handleAccountTypeChange}
               >
                 <SelectTrigger id="account-type-filter">
-                  <SelectValue placeholder={t("filters.allTypes")} />
+                  <SelectValue 
+                    placeholder={t("filters.allTypes")}
+                    displayValue={filters.accountType ? 
+                      getAccountTypeLabel(filters.accountType) : 
+                      t("filters.allTypes")
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t("filters.allTypes")}</SelectItem>
@@ -162,7 +168,13 @@ export function AccountFilters({
                 onValueChange={handleActiveStatusChange}
               >
                 <SelectTrigger id="status-filter">
-                  <SelectValue placeholder={t("filters.allStatuses")} />
+                  <SelectValue 
+                    placeholder={t("filters.allStatuses")}
+                    displayValue={(() => {
+                      if (filters.isActive === undefined) return t("filters.allStatuses");
+                      return filters.isActive ? t("accounts.active") : t("accounts.inactive");
+                    })()}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t("filters.allStatuses")}</SelectItem>

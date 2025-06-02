@@ -463,7 +463,13 @@ export function AccountForm({
                     }
                   >
                     <SelectTrigger id="accountType" className="w-full cursor-pointer">
-                      <SelectValue placeholder={t("selectAccountType")} />
+                      <SelectValue 
+                        placeholder={t("selectAccountType")}
+                        displayValue={(() => {
+                          const selectedType = accountTypes.find(type => type.value === formData.accountType);
+                          return selectedType ? selectedType.label : undefined;
+                        })()}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {accountTypes.map((type) => (
@@ -534,7 +540,20 @@ export function AccountForm({
                   }
                 >
                   <SelectTrigger id="currency" className="w-full cursor-pointer">
-                    <SelectValue placeholder={t("selectCurrency")} />
+                    <SelectValue 
+                      placeholder={t("selectCurrency")}
+                      displayValue={(() => {
+                        const selectedCurrency = supportedCurrencies.find(currency => currency.value === formData.currency);
+                        return selectedCurrency ? (
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{selectedCurrency.label}</span>
+                            <span className="text-sm text-muted-foreground">
+                              {selectedCurrency.description}
+                            </span>
+                          </div>
+                        ) : undefined;
+                      })()}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {supportedCurrencies.map((currency) => (

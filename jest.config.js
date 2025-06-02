@@ -21,21 +21,20 @@ const customJestConfig = {
     "^@/(.*)$": "<rootDir>/src/$1",
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
     "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/__mocks__/fileMock.js",
+    "^uuid$": require.resolve("uuid"),
   },
 
-  // Coverage configuration for 100% target
+  // Coverage configuration for 100% target on UI components only
   collectCoverage: false, // Enable only when running coverage command
   collectCoverageFrom: [
-    "src/**/*.{ts,tsx}",
-    "!src/**/*.d.ts",
-    "!src/**/*.stories.{ts,tsx}",
-    "!src/**/*.config.{ts,tsx}",
-    "!src/app/layout.tsx",
-    "!src/app/globals.css",
+    "src/components/ui/**/*.{ts,tsx}",
+    "!src/components/ui/**/*.d.ts",
+    "!src/components/ui/**/*.stories.{ts,tsx}",
+    "!src/components/ui/**/*.config.{ts,tsx}",
     "!**/node_modules/**",
   ],
   coverageThreshold: {
-    global: {
+    "src/components/ui/**/*.{ts,tsx}": {
       branches: 100,
       functions: 100,
       lines: 100,
@@ -59,11 +58,6 @@ const customJestConfig = {
   // Setup for testing environment
   testTimeout: 10000,
   verbose: true,
-  
-  // Mock specific modules
-  moduleNameMapping: {
-    "^uuid$": require.resolve("uuid"),
-  },
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

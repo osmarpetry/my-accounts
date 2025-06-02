@@ -31,34 +31,37 @@ global.IntersectionObserver = jest.fn().mockImplementation(() => ({
   thresholds: [],
 }))
 
-// Mock window.matchMedia (used by responsive components)
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-})
+// Only define window properties if window exists (jsdom environment)
+if (typeof window !== 'undefined') {
+  // Mock window.matchMedia (used by responsive components)
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(), // deprecated
+      removeListener: jest.fn(), // deprecated
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  })
 
-// Mock window.scrollTo
-Object.defineProperty(window, 'scrollTo', {
-  writable: true,
-  value: jest.fn(),
-})
+  // Mock window.scrollTo
+  Object.defineProperty(window, 'scrollTo', {
+    writable: true,
+    value: jest.fn(),
+  })
 
-// Mock window.getComputedStyle
-Object.defineProperty(window, 'getComputedStyle', {
-  writable: true,
-  value: jest.fn().mockImplementation(() => ({
-    getPropertyValue: jest.fn().mockReturnValue(''),
-  })),
-})
+  // Mock window.getComputedStyle
+  Object.defineProperty(window, 'getComputedStyle', {
+    writable: true,
+    value: jest.fn().mockImplementation(() => ({
+      getPropertyValue: jest.fn().mockReturnValue(''),
+    })),
+  })
+}
 
 // Mock CSS.supports for CSS-in-JS libraries
 Object.defineProperty(global, 'CSS', {
@@ -71,12 +74,12 @@ Object.defineProperty(global, 'CSS', {
 // Mock next/navigation for App Router
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn().mockReturnValue({
-    push: jest.fn(),
-    replace: jest.fn(),
-    back: jest.fn(),
-    forward: jest.fn(),
+      push: jest.fn(),
+      replace: jest.fn(),
+      back: jest.fn(),
+      forward: jest.fn(),
     refresh: jest.fn(),
-    prefetch: jest.fn(),
+      prefetch: jest.fn(),
   }),
   useSearchParams: jest.fn().mockReturnValue(new URLSearchParams()),
   usePathname: jest.fn().mockReturnValue('/'),
@@ -92,17 +95,42 @@ jest.mock('next-intl', () => ({
   NextIntlClientProvider: ({ children }) => children,
 }))
 
-// Mock react-i18next as fallback
+// Mock react-i18next with proper initReactI18next
 jest.mock('react-i18next', () => ({
   useTranslation: jest.fn().mockReturnValue({
     t: (key) => key,
     i18n: {
       language: 'en',
       changeLanguage: jest.fn().mockResolvedValue(undefined),
-    },
+  },
   }),
   Trans: ({ children }) => children,
   I18nextProvider: ({ children }) => children,
+  initReactI18next: {
+    type: '3rdParty',
+    init: jest.fn(),
+  },
+}))
+
+// Mock i18next
+jest.mock('i18next', () => ({
+  default: {
+    use: jest.fn().mockReturnThis(),
+    init: jest.fn().mockResolvedValue(undefined),
+    t: jest.fn((key) => key),
+    changeLanguage: jest.fn().mockResolvedValue(undefined),
+    language: 'en',
+  },
+}))
+
+// Mock i18next-browser-languagedetector
+jest.mock('i18next-browser-languagedetector', () => ({
+  default: {
+    type: 'languageDetector',
+    init: jest.fn(),
+    detect: jest.fn().mockReturnValue('en'),
+    cacheUserLanguage: jest.fn(),
+  },
 }))
 
 // Mock Lucide React icons to prevent rendering issues
@@ -134,9 +162,14 @@ jest.mock('class-variance-authority', () => ({
 }))
 
 // Mock clsx and tailwind-merge
-jest.mock('clsx', () => jest.fn().mockImplementation((...args) => 
-  args.filter(Boolean).join(' ')
-))
+jest.mock('clsx', () => ({
+  clsx: jest.fn().mockImplementation((...args) => 
+    args.filter(Boolean).join(' ')
+  ),
+  default: jest.fn().mockImplementation((...args) => 
+    args.filter(Boolean).join(' ')
+  ),
+}))
 
 jest.mock('tailwind-merge', () => ({
   twMerge: jest.fn().mockImplementation((...args) => 

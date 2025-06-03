@@ -43,10 +43,9 @@ function createSelectWithDisplayValue(displayValue?: string | React.ReactNode) {
   return (
     <Select value="option1" onValueChange={jest.fn()}>
       <SelectTrigger data-testid="select-trigger">
-        <SelectValue 
-          placeholder="Select an option" 
-          displayValue={displayValue}
-        />
+        <SelectValue placeholder="Select an option">
+          {displayValue}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="option1">Option 1</SelectItem>
@@ -219,10 +218,9 @@ describe('Select Component', () => {
       render(
         <Select value="" onValueChange={jest.fn()}>
           <SelectTrigger>
-            <SelectValue 
-              placeholder="Fallback Placeholder" 
-              displayValue={undefined}
-            />
+            <SelectValue placeholder="Fallback Placeholder">
+              {undefined}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="test">Test</SelectItem>
@@ -237,11 +235,9 @@ describe('Select Component', () => {
       render(
         <Select>
           <SelectTrigger>
-            <SelectValue 
-              className="custom-value-class" 
-              placeholder="Test"
-              data-testid="select-value"
-            />
+            <SelectValue placeholder="Test" className="custom-value-class">
+              {undefined}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="test">Test</SelectItem>
@@ -256,11 +252,9 @@ describe('Select Component', () => {
       render(
         <Select>
           <SelectTrigger>
-            <SelectValue 
-              placeholder="Test"
-              data-testid="select-value"
-              title="Custom title"
-            />
+            <SelectValue placeholder="Test" className="custom-value-class" title="Custom title">
+              {undefined}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="test">Test</SelectItem>
@@ -275,7 +269,9 @@ describe('Select Component', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
       
       expect(() => {
-        render(<SelectValue placeholder="Invalid" />)
+        render(<SelectValue placeholder="Invalid">
+          {undefined}
+        </SelectValue>)
       }).toThrow('SelectValue must be used within Select')
       
       consoleSpy.mockRestore()

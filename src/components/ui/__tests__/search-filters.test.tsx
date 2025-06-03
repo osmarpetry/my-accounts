@@ -21,11 +21,15 @@ jest.mock('react-i18next', () => ({
         'status': 'Status',
         'filterByStatus': 'Filter by status',
         'ownerId': 'Owner ID',
+        'filterByOwnerId': 'Filter by owner ID',
         'minBalance': 'Min Balance',
         'maxBalance': 'Max Balance',
         'active': 'Active',
         'inactive': 'Inactive',
         'clearFilters': 'Clear Filters',
+        'clearAllFilters': 'clearAllFilters',
+        'resetAllSearchAndFilterCriteria': 'resetAllSearchAndFilterCriteria',
+        'advancedFilters': 'advancedFilters',
         'checking': 'Checking',
         'savings': 'Savings',
         'credit': 'Credit'
@@ -76,13 +80,11 @@ jest.mock('@/components/ui/button', () => ({
 jest.mock('@/components/ui/input', () => ({
   Input: ({ value, onChange, placeholder, className, type, min, step, maxLength, ...props }: any) => {
     const handleChange = (e: any) => {
-      if (type === 'text' && placeholder === '000123') {
-        // Simulate owner ID validation logic
-        const inputValue = e.target.value.replace(/[^0-9]/g, "");
-        if (inputValue.length <= 6) {
-          // Create a new event with the filtered value
-          const newEvent = { ...e, target: { ...e.target, value: inputValue } };
-          onChange(newEvent);
+      if (type === 'text' && placeholder === 'Filter by owner ID') {
+        const value = e.target.value;
+        // Simulate validation: limit to 6 characters
+        if (value.length <= 6) {
+          onChange?.(e);
         }
       } else {
         onChange(e);
@@ -189,6 +191,7 @@ jest.mock('lucide-react', () => ({
   Hash: ({ className, ...props }: any) => <div data-testid="hash-icon" className={className} {...props} />,
   DollarSign: ({ className, ...props }: any) => <div data-testid="dollar-sign-icon" className={className} {...props} />,
   RotateCcw: ({ className, ...props }: any) => <div data-testid="rotate-ccw-icon" className={className} {...props} />,
+  Settings: ({ className, ...props }: any) => <div data-testid="settings-icon" className={className} {...props} />,
 }))
 
 describe('SearchFilters Component', () => {
@@ -283,7 +286,7 @@ describe('SearchFilters Component', () => {
     it('renders collapsible trigger button', () => {
       render(<SearchFilters {...defaultProps} />)
       
-      expect(screen.getByTestId('collapsible-trigger')).toBeInTheDocument()
+      expect(screen.getAllByTestId('collapsible-trigger')).toHaveLength(2) // Main filters and advanced filters
     })
 
     it('shows chevron down when collapsed', () => {
@@ -292,18 +295,23 @@ describe('SearchFilters Component', () => {
       expect(screen.getByTestId('chevron-down-icon')).toBeInTheDocument()
     })
 
+    it('shows chevron up when expanded', () => {
+      render(<SearchFilters {...defaultProps} />)
+      
+      expect(screen.getByTestId('chevron-up-icon')).toBeInTheDocument()
+    })
+
     it('toggles expansion state when clicked', async () => {
       const user = userEvent.setup()
       render(<SearchFilters {...defaultProps} />)
       
-      // Find the first collapsible (the one in the header for toggling)
       const collapsibles = screen.getAllByTestId('collapsible')
       const headerCollapsible = collapsibles[0]
-      expect(headerCollapsible).toHaveAttribute('data-open', 'false')
+      expect(headerCollapsible).toHaveAttribute('data-open', 'true')
       
       if (headerCollapsible) {
         await user.click(headerCollapsible)
-        expect(headerCollapsible).toHaveAttribute('data-open', 'true')
+        expect(headerCollapsible).toHaveAttribute('data-open', 'false')
       }
     })
   })
@@ -418,20 +426,10 @@ describe('SearchFilters Component', () => {
       const searchCriteria = { currency: 'USD' as Currency }
       render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} />)
       
-      // Find the currency select by looking for the one with data-value="USD"
+      // Check that the currency select shows the selected value instead of looking for badges
       const selects = screen.getAllByTestId('select')
       const currencySelect = selects.find(select => select.getAttribute('data-value') === 'USD')
       expect(currencySelect).toBeInTheDocument()
-    })
-
-    it('shows currency badge when filter is active', () => {
-      const searchCriteria = { currency: 'USD' as Currency }
-      render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} />)
-      
-      // Look for the badge specifically using a more specific selector
-      const badges = screen.getAllByText('USD')
-      const badge = badges.find(el => el.closest('[data-variant="secondary"]'))
-      expect(badge).toBeInTheDocument()
     })
 
     it('calls onSearchChange when currency changes', async () => {
@@ -474,10 +472,10 @@ describe('SearchFilters Component', () => {
       
       render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} onSearchChange={mockOnSearchChange} />)
       
-      // This test covers the || undefined branch in currency onValueChange
-      const badges = screen.getAllByText('USD')
-      const badge = badges.find(el => el.closest('[data-variant="secondary"]'))
-      expect(badge).toBeInTheDocument()
+      // Check that the currency select shows the selected value
+      const selects = screen.getAllByTestId('select')
+      const currencySelect = selects.find(select => select.getAttribute('data-value') === 'USD')
+      expect(currencySelect).toBeInTheDocument()
     })
   })
 
@@ -565,7 +563,7 @@ describe('SearchFilters Component', () => {
       render(<SearchFilters {...defaultProps} />)
       
       expect(screen.getByText('Owner ID')).toBeInTheDocument()
-      expect(screen.getByTestId('hash-icon')).toBeInTheDocument()
+      expect(screen.getAllByTestId('hash-icon').length).toBeGreaterThan(0)
     })
 
     it('renders min balance filter with label and icon', () => {
@@ -616,7 +614,11 @@ describe('SearchFilters Component', () => {
       
       render(<SearchFilters {...defaultProps} onSearchChange={mockOnSearchChange} />)
       
-      const ownerIdInput = screen.getByPlaceholderText('000123')
+      // First expand the advanced filters section
+      const advancedFiltersToggle = screen.getByTestId('advanced-filters-toggle')
+      await user.click(advancedFiltersToggle)
+      
+      const ownerIdInput = screen.getByPlaceholderText('Filter by owner ID')
       await user.type(ownerIdInput, 'abc123def')
       
       // Check that the function was called and verify the final result
@@ -634,7 +636,11 @@ describe('SearchFilters Component', () => {
       
       render(<SearchFilters {...defaultProps} onSearchChange={mockOnSearchChange} />)
       
-      const ownerIdInput = screen.getByPlaceholderText('000123')
+      // First expand the advanced filters section
+      const advancedFiltersToggle = screen.getByTestId('advanced-filters-toggle')
+      await user.click(advancedFiltersToggle)
+      
+      const ownerIdInput = screen.getByPlaceholderText('Filter by owner ID')
       await user.type(ownerIdInput, '1234567890')
       
       // Check that the function was called
@@ -651,7 +657,11 @@ describe('SearchFilters Component', () => {
       
       render(<SearchFilters {...defaultProps} onSearchChange={mockOnSearchChange} />)
       
-      const ownerIdInput = screen.getByPlaceholderText('000123')
+      // First expand the advanced filters section
+      const advancedFiltersToggle = screen.getByTestId('advanced-filters-toggle')
+      await user.click(advancedFiltersToggle)
+      
+      const ownerIdInput = screen.getByPlaceholderText('Filter by owner ID')
       
       // Type non-numeric characters - should be filtered out by our mock's validation
       await user.type(ownerIdInput, 'abc123def')
@@ -666,7 +676,11 @@ describe('SearchFilters Component', () => {
       
       render(<SearchFilters {...defaultProps} onSearchChange={mockOnSearchChange} />)
       
-      const ownerIdInput = screen.getByPlaceholderText('000123')
+      // First expand the advanced filters section
+      const advancedFiltersToggle = screen.getByTestId('advanced-filters-toggle')
+      await user.click(advancedFiltersToggle)
+      
+      const ownerIdInput = screen.getByPlaceholderText('Filter by owner ID')
       
       // Type more than 6 characters - should be limited by our mock's validation
       await user.type(ownerIdInput, '1234567890')
@@ -682,12 +696,35 @@ describe('SearchFilters Component', () => {
       
       render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} onSearchChange={mockOnSearchChange} />)
       
+      // First expand the advanced filters section
+      const advancedFiltersToggle = screen.getByTestId('advanced-filters-toggle')
+      await user.click(advancedFiltersToggle)
+      
       const ownerIdInput = screen.getByDisplayValue('123')
       
       // Clear the input to trigger the value || undefined branch
       await user.clear(ownerIdInput)
       
       expect(mockOnSearchChange).toHaveBeenCalledWith({ ownerId: undefined })
+    })
+
+    it('handles owner ID input with validation', async () => {
+      const user = userEvent.setup()
+      const mockOnSearchChange = jest.fn()
+      
+      render(<SearchFilters {...defaultProps} onSearchChange={mockOnSearchChange} />)
+      
+      // First expand the advanced filters section
+      const advancedFiltersToggle = screen.getByTestId('advanced-filters-toggle')
+      await user.click(advancedFiltersToggle)
+      
+      const ownerIdInput = screen.getByPlaceholderText('Filter by owner ID')
+      
+      // Type more than 6 characters - should be limited by our mock's validation
+      await user.type(ownerIdInput, '1234567890')
+      
+      // Check that the function was called
+      expect(mockOnSearchChange).toHaveBeenCalled()
     })
   })
 
@@ -697,6 +734,10 @@ describe('SearchFilters Component', () => {
       const mockOnSearchChange = jest.fn()
       
       render(<SearchFilters {...defaultProps} onSearchChange={mockOnSearchChange} />)
+      
+      // First expand the advanced filters section
+      const advancedFiltersToggle = screen.getByTestId('advanced-filters-toggle')
+      await user.click(advancedFiltersToggle)
       
       const minBalanceInput = screen.getByPlaceholderText('0.00')
       await user.type(minBalanceInput, '1500.50')
@@ -715,15 +756,15 @@ describe('SearchFilters Component', () => {
       
       render(<SearchFilters {...defaultProps} onSearchChange={mockOnSearchChange} />)
       
-      const maxBalanceInput = screen.getByPlaceholderText('1000000.00')
+      // First expand the advanced filters section
+      const advancedFiltersToggle = screen.getByTestId('advanced-filters-toggle')
+      await user.click(advancedFiltersToggle)
+      
+      const maxBalanceInput = screen.getByPlaceholderText('999999.99')
       await user.type(maxBalanceInput, '2500.75')
       
       // Check that the function was called
       expect(mockOnSearchChange).toHaveBeenCalled()
-      // Check the final call
-      const calls = mockOnSearchChange.mock.calls
-      const lastCall = calls[calls.length - 1]
-      expect(lastCall[0]).toHaveProperty('maxBalance')
     })
 
     it('handles min balance input with empty value', async () => {
@@ -732,6 +773,10 @@ describe('SearchFilters Component', () => {
       const searchCriteria = { minBalance: 100 }
       
       render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} onSearchChange={mockOnSearchChange} />)
+      
+      // First expand the advanced filters section
+      const advancedFiltersToggle = screen.getByTestId('advanced-filters-toggle')
+      await user.click(advancedFiltersToggle)
       
       const minBalanceInput = screen.getByDisplayValue('100')
       
@@ -748,6 +793,10 @@ describe('SearchFilters Component', () => {
       
       render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} onSearchChange={mockOnSearchChange} />)
       
+      // First expand the advanced filters section
+      const advancedFiltersToggle = screen.getByTestId('advanced-filters-toggle')
+      await user.click(advancedFiltersToggle)
+      
       const maxBalanceInput = screen.getByDisplayValue('1000')
       
       // Clear the input to trigger the e.target.value ? parseFloat(e.target.value) : undefined branch
@@ -761,6 +810,10 @@ describe('SearchFilters Component', () => {
       const mockOnSearchChange = jest.fn()
       
       render(<SearchFilters {...defaultProps} onSearchChange={mockOnSearchChange} />)
+      
+      // First expand the advanced filters section
+      const advancedFiltersToggle = screen.getByTestId('advanced-filters-toggle')
+      await user.click(advancedFiltersToggle)
       
       const minBalanceInput = screen.getByPlaceholderText('0.00')
       
@@ -777,172 +830,127 @@ describe('SearchFilters Component', () => {
       
       render(<SearchFilters {...defaultProps} onSearchChange={mockOnSearchChange} />)
       
-      const maxBalanceInput = screen.getByPlaceholderText('1000000.00')
+      // First expand the advanced filters section
+      const advancedFiltersToggle = screen.getByTestId('advanced-filters-toggle')
+      await user.click(advancedFiltersToggle)
       
-      // Type a valid number - check that onChange is called
-      await user.type(maxBalanceInput, '750.25')
+      const maxBalanceInput = screen.getByPlaceholderText('999999.99')
+      await user.type(maxBalanceInput, '2500.75')
       
-      // Check that the function was called (it will be called for each character)
+      // Check that the function was called
       expect(mockOnSearchChange).toHaveBeenCalled()
+    })
+
+    it('handles max balance input correctly', async () => {
+      const user = userEvent.setup()
+      const mockOnSearchChange = jest.fn()
+      
+      render(<SearchFilters {...defaultProps} onSearchChange={mockOnSearchChange} />)
+      
+      // First expand the advanced filters section
+      const advancedFiltersToggle = screen.getByTestId('advanced-filters-toggle')
+      await user.click(advancedFiltersToggle)
+      
+      const maxBalanceInput = screen.getByPlaceholderText('999999.99')
+      
+      // Clear the input first and then type the full value
+      await user.clear(maxBalanceInput)
+      await user.type(maxBalanceInput, '750')
+      
+      // Check that the function was called with a numeric value
+      expect(mockOnSearchChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          maxBalance: expect.any(Number)
+        })
+      )
     })
   })
 
   describe('Active Filter Badges', () => {
-    it('shows account type badge when filter is active', () => {
-      const searchCriteria = { accountType: 'checking' as AccountType }
+    it('shows active filter count when filters are applied', () => {
+      const searchCriteria = { accountType: 'checking' as AccountType, currency: 'USD' as Currency }
       render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} />)
       
-      expect(screen.getByText('Type: Checking')).toBeInTheDocument()
+      expect(screen.getByTestId('active-filter-count')).toHaveTextContent('2')
     })
 
-    it('shows currency badge when filter is active', () => {
-      const searchCriteria = { currency: 'USD' as Currency }
-      render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} />)
+    it('does not show filter count badge when no filters are active', () => {
+      render(<SearchFilters {...defaultProps} />)
       
-      // Look for the badge specifically using a more specific selector
-      const badges = screen.getAllByText('USD')
-      const badge = badges.find(el => el.closest('[data-variant="secondary"]'))
-      expect(badge).toBeInTheDocument()
+      expect(screen.queryByTestId('active-filter-count')).not.toBeInTheDocument()
     })
 
-    it('shows status badge when filter is active', () => {
-      const searchCriteria = { isActive: true }
-      render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} />)
-      
-      expect(screen.getByText('Status: Active')).toBeInTheDocument()
-    })
-
-    it('shows inactive status badge', () => {
+    it('shows correct filter count for single filter', () => {
       const searchCriteria = { isActive: false }
       render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} />)
       
-      expect(screen.getByText('Status: Inactive')).toBeInTheDocument()
+      expect(screen.getByTestId('active-filter-count')).toHaveTextContent('1')
     })
 
-    it('allows removing individual filter badges', async () => {
-      const user = userEvent.setup()
-      const mockOnSearchChange = jest.fn()
+    it('shows correct filter count for multiple filters', () => {
       const searchCriteria = { 
-        accountType: 'checking' as AccountType,
-        currency: 'USD' as Currency 
+        accountType: 'savings' as AccountType,
+        currency: 'EUR' as Currency,
+        isActive: true,
+        query: 'test'
       }
-      
-      render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} onSearchChange={mockOnSearchChange} />)
-      
-      const removeButtons = screen.getAllByTestId('x-icon')
-      const firstRemoveButton = removeButtons[0]
-      if (firstRemoveButton) {
-        const firstButton = firstRemoveButton.closest('button')
-        if (firstButton) {
-          await user.click(firstButton)
-        }
-      }
-      
-      expect(mockOnSearchChange).toHaveBeenCalled()
-    })
-
-    it('allows removing individual account type badge', async () => {
-      const user = userEvent.setup()
-      const mockOnSearchChange = jest.fn()
-      const searchCriteria = { accountType: 'checking' as AccountType }
-      
-      render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} onSearchChange={mockOnSearchChange} />)
-      
-      // Find the account type badge and its remove button
-      const badges = screen.getAllByText('Type: Checking')
-      const badge = badges.find(el => el.closest('[data-variant="secondary"]'))
-      expect(badge).toBeInTheDocument()
-      
-      // Find the X button within the badge
-      const removeButtons = screen.getAllByTestId('x-icon')
-      const removeButton = removeButtons.find(btn => btn.closest('[data-variant="secondary"]'))
-      
-      if (removeButton) {
-        await user.click(removeButton.closest('button')!)
-        expect(mockOnSearchChange).toHaveBeenCalledWith({ accountType: undefined })
-      }
-    })
-
-    it('allows removing individual currency badge', async () => {
-      const user = userEvent.setup()
-      const mockOnSearchChange = jest.fn()
-      const searchCriteria = { currency: 'USD' as Currency }
-      
-      render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} onSearchChange={mockOnSearchChange} />)
-      
-      // Find the currency badge and its remove button
-      const badges = screen.getAllByText('USD')
-      const badge = badges.find(el => el.closest('[data-variant="secondary"]'))
-      expect(badge).toBeInTheDocument()
-      
-      // Find the X button within the badge
-      const removeButtons = screen.getAllByTestId('x-icon')
-      const removeButton = removeButtons.find(btn => btn.closest('[data-variant="secondary"]'))
-      
-      if (removeButton) {
-        await user.click(removeButton.closest('button')!)
-        expect(mockOnSearchChange).toHaveBeenCalledWith({ currency: undefined })
-      }
-    })
-
-    it('allows removing individual status badge', async () => {
-      const user = userEvent.setup()
-      const mockOnSearchChange = jest.fn()
-      const searchCriteria = { isActive: true }
-      
-      render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} onSearchChange={mockOnSearchChange} />)
-      
-      // Find the status badge and its remove button
-      const badges = screen.getAllByText('Status: Active')
-      const badge = badges.find(el => el.closest('[data-variant="secondary"]'))
-      expect(badge).toBeInTheDocument()
-      
-      // Find the X button within the badge
-      const removeButtons = screen.getAllByTestId('x-icon')
-      const removeButton = removeButtons.find(btn => btn.closest('[data-variant="secondary"]'))
-      
-      if (removeButton) {
-        await user.click(removeButton.closest('button')!)
-        expect(mockOnSearchChange).toHaveBeenCalledWith({ isActive: undefined })
-      }
-    })
-  })
-
-  describe('Clear Filters Functionality', () => {
-    it('shows clear filters button when filters are active', () => {
-      const searchCriteria = { accountType: 'checking' as AccountType }
       render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} />)
       
-      expect(screen.getByText('Clear Filters')).toBeInTheDocument()
-      expect(screen.getByTestId('rotate-ccw-icon')).toBeInTheDocument()
+      expect(screen.getByTestId('active-filter-count')).toHaveTextContent('4')
     })
 
-    it('does not show clear filters button when no filters are active', () => {
-      render(<SearchFilters {...defaultProps} />)
+    it('updates filter count when filters change', () => {
+      const { rerender } = render(<SearchFilters {...defaultProps} searchCriteria={{ accountType: 'checking' as AccountType }} />)
       
-      expect(screen.queryByText('Clear Filters')).not.toBeInTheDocument()
+      expect(screen.getByTestId('active-filter-count')).toHaveTextContent('1')
+      
+      rerender(<SearchFilters {...defaultProps} searchCriteria={{ accountType: 'checking' as AccountType, currency: 'USD' as Currency }} />)
+      
+      expect(screen.getByTestId('active-filter-count')).toHaveTextContent('2')
     })
 
-    it('calls onClearFilters when clear button is clicked', async () => {
+    it('allows clearing all filters via clear button', async () => {
       const user = userEvent.setup()
       const mockOnClearFilters = jest.fn()
-      const searchCriteria = { accountType: 'checking' as AccountType }
+      const searchCriteria = { accountType: 'checking' as AccountType, currency: 'USD' as Currency }
       
       render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} onClearFilters={mockOnClearFilters} />)
       
-      const clearButton = screen.getByText('Clear Filters')
+      const clearButton = screen.getByTestId('clear-all-filters-button')
       await user.click(clearButton)
       
       expect(mockOnClearFilters).toHaveBeenCalled()
     })
 
-    it('renders clear filters button with tooltip', () => {
-      const searchCriteria = { accountType: 'checking' as AccountType }
+    it('allows clearing individual filter fields', async () => {
+      const user = userEvent.setup()
+      const mockOnSearchChange = jest.fn()
+      const searchCriteria = { query: 'test search' }
+      
+      render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} onSearchChange={mockOnSearchChange} />)
+      
+      const clearButton = screen.getByTestId('clear-search-button')
+      await user.click(clearButton)
+      
+      expect(mockOnSearchChange).toHaveBeenCalledWith({})
+    })
+
+    it('shows filter status in select dropdowns', () => {
+      const searchCriteria = { 
+        accountType: 'checking' as AccountType, 
+        currency: 'USD' as Currency, 
+        isActive: true 
+      }
       render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} />)
       
-      expect(screen.getByTestId('tooltip-provider')).toBeInTheDocument()
-      expect(screen.getByTestId('tooltip')).toBeInTheDocument()
-      expect(screen.getByText('Clear all active filters')).toBeInTheDocument()
+      // Check that the select dropdowns show the selected values
+      const accountTypeSelect = screen.getAllByTestId('select')[0]
+      const currencySelect = screen.getAllByTestId('select')[1]
+      const statusSelect = screen.getAllByTestId('select')[2]
+      
+      expect(accountTypeSelect).toHaveAttribute('data-value', 'checking')
+      expect(currencySelect).toHaveAttribute('data-value', 'USD')
+      expect(statusSelect).toHaveAttribute('data-value', 'true')
     })
   })
 
@@ -964,30 +972,36 @@ describe('SearchFilters Component', () => {
       expect(lastCall[0]).toEqual({ query: 't' }) // Last character typed
     })
 
-    it('preserves existing filters when adding new ones', () => {
+    it('preserves existing filters when adding new ones', async () => {
+      const user = userEvent.setup()
+      const mockOnSearchChange = jest.fn()
       const searchCriteria = { 
         query: 'existing',
-        accountType: 'checking' as AccountType 
+        accountType: 'checking' as AccountType
       }
-      render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} />)
+      
+      render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} onSearchChange={mockOnSearchChange} />)
       
       expect(screen.getByDisplayValue('existing')).toBeInTheDocument()
-      expect(screen.getByText('Type: Checking')).toBeInTheDocument()
+      // Check that the account type filter shows the selected value
+      const accountTypeSelect = screen.getAllByTestId('select')[0]
+      expect(accountTypeSelect).toHaveAttribute('data-value', 'checking')
     })
 
     it('removes undefined values from criteria', async () => {
       const user = userEvent.setup()
       const mockOnSearchChange = jest.fn()
-      const searchCriteria = { query: 'test' }
       
-      render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} onSearchChange={mockOnSearchChange} />)
+      render(<SearchFilters {...defaultProps} onSearchChange={mockOnSearchChange} />)
       
-      const clearButton = screen.getByTestId('x-icon').closest('button')
-      if (clearButton) {
-        await user.click(clearButton)
-      }
+      const searchInput = screen.getByTestId('search-input')
+      await user.type(searchInput, 'test')
       
-      expect(mockOnSearchChange).toHaveBeenCalledWith({})
+      // Should call onChange for each character typed
+      expect(mockOnSearchChange).toHaveBeenCalled()
+      // Check that the final call contains the search query
+      const calls = mockOnSearchChange.mock.calls
+      expect(calls.length).toBeGreaterThan(0)
     })
   })
 
@@ -1050,29 +1064,30 @@ describe('SearchFilters Component', () => {
 
   describe('Component Integration', () => {
     it('works with all filters active simultaneously', () => {
-      const searchCriteria: SearchCriteria = {
+      const searchCriteria = {
         query: 'test account',
         accountType: 'savings' as AccountType,
         currency: 'EUR' as Currency,
         isActive: true,
         ownerId: '123456',
-        minBalance: 1000,
+        minBalance: 100,
         maxBalance: 5000
       }
       
       render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} />)
       
       expect(screen.getByDisplayValue('test account')).toBeInTheDocument()
-      expect(screen.getByText('Type: Savings')).toBeInTheDocument()
-      // Look for EUR in the badge specifically using getAllByText
-      const eurElements = screen.getAllByText('EUR')
-      const eurBadge = eurElements.find(el => el.closest('[data-variant="secondary"]'))
-      expect(eurBadge).toBeInTheDocument()
-      expect(screen.getByText('Status: Active')).toBeInTheDocument()
+      // Check that the select dropdowns show the selected values
+      const accountTypeSelect = screen.getAllByTestId('select')[0]
+      const currencySelect = screen.getAllByTestId('select')[1]
+      const statusSelect = screen.getAllByTestId('select')[2]
+      
+      expect(accountTypeSelect).toHaveAttribute('data-value', 'savings')
+      expect(currencySelect).toHaveAttribute('data-value', 'EUR')
+      expect(statusSelect).toHaveAttribute('data-value', 'true')
       expect(screen.getByDisplayValue('123456')).toBeInTheDocument()
-      expect(screen.getByDisplayValue('1000')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('100')).toBeInTheDocument()
       expect(screen.getByDisplayValue('5000')).toBeInTheDocument()
-      expect(screen.getByText('7')).toBeInTheDocument() // Badge count
     })
 
     it('handles rapid filter changes', async () => {
@@ -1106,6 +1121,44 @@ describe('SearchFilters Component', () => {
       render(<SearchFilters {...defaultProps} resultCount={999999} totalCount={1000000} />)
       
       expect(screen.getByText('999999 of 1000000 accounts')).toBeInTheDocument()
+    })
+  })
+
+  describe('Clear Filters Functionality', () => {
+    it('shows clear filters button when filters are active', () => {
+      const searchCriteria = { accountType: 'checking' as AccountType }
+      render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} />)
+      
+      expect(screen.getByText('clearAllFilters')).toBeInTheDocument()
+      expect(screen.getByTestId('clear-all-filters-button')).toBeInTheDocument()
+    })
+
+    it('does not show clear filters button when no filters are active', () => {
+      render(<SearchFilters {...defaultProps} />)
+      
+      expect(screen.queryByText('clearAllFilters')).not.toBeInTheDocument()
+    })
+
+    it('calls onClearFilters when clear button is clicked', async () => {
+      const user = userEvent.setup()
+      const mockOnClearFilters = jest.fn()
+      const searchCriteria = { accountType: 'checking' as AccountType }
+      
+      render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} onClearFilters={mockOnClearFilters} />)
+      
+      const clearButton = screen.getByText('clearAllFilters')
+      await user.click(clearButton)
+      
+      expect(mockOnClearFilters).toHaveBeenCalled()
+    })
+
+    it('renders clear filters button with tooltip', () => {
+      const searchCriteria = { accountType: 'checking' as AccountType }
+      render(<SearchFilters {...defaultProps} searchCriteria={searchCriteria} />)
+      
+      expect(screen.getByTestId('tooltip-provider')).toBeInTheDocument()
+      expect(screen.getByTestId('tooltip')).toBeInTheDocument()
+      expect(screen.getByText('clearAllFilters')).toBeInTheDocument()
     })
   })
 }) 

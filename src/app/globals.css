@@ -2,7 +2,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
+    --background: 0 0% 97%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -10,16 +10,16 @@
     --popover-foreground: 222.2 84% 4.9%;
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
+    --secondary: 210 40% 94%;
     --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
+    --muted: 210 40% 94%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
+    --accent: 210 40% 94%;
     --accent-foreground: 222.2 84% 4.9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 214.3 31.8% 89.4%;
+    --input: 214.3 31.8% 89.4%;
     --ring: 222.2 84% 4.9%;
     --radius: 0.75rem;
   }
@@ -43,7 +43,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 212.7 26.8% 88.9%;
   }
 }
 
@@ -102,6 +102,143 @@ body {
   box-shadow: var(--shadow-card-dark);
 }
 
+/* Mobile-responsive utilities */
+.mobile-touch-target {
+  @apply min-h-[44px] min-w-[44px];
+}
+
+.mobile-button-group {
+  @apply flex flex-col sm:flex-row gap-2 sm:gap-3;
+}
+
+.mobile-button-group>* {
+  @apply flex-1 sm:flex-none;
+}
+
+.mobile-stats-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4;
+}
+
+.mobile-accounts-grid {
+  @apply grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4;
+}
+
+.mobile-filters-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4;
+}
+
+.mobile-header-actions {
+  @apply flex flex-col sm:flex-row gap-2 sm:gap-3;
+}
+
+.mobile-card-padding {
+  @apply p-4 sm:p-6;
+}
+
+.mobile-text-responsive {
+  @apply text-sm sm:text-base;
+}
+
+.mobile-hide-text {
+  @apply hidden sm:inline;
+}
+
+.mobile-show-text {
+  @apply inline sm:hidden;
+}
+
+.mobile-show-icon {
+  @apply block sm:hidden;
+}
+
+/* Mobile pagination controls */
+.mobile-pagination-controls {
+  @apply flex flex-col sm:flex-row sm:items-center gap-4;
+}
+
+.mobile-pagination-stack {
+  @apply flex flex-col sm:flex-row gap-2 sm:gap-4;
+}
+
+/* Mobile controls reorganization */
+.mobile-controls-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4;
+}
+
+.mobile-controls-stack {
+  @apply flex flex-col sm:flex-row gap-4;
+}
+
+/* Advanced filters collapsible */
+.mobile-advanced-filters {
+  @apply space-y-4;
+}
+
+/* Responsive breakpoint utilities */
+@media (max-width: 480px) {
+  .mobile-compact {
+    padding: 0.75rem;
+  }
+
+  .mobile-compact-header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .mobile-stack {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .mobile-full-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Enhanced responsive grid system */
+.responsive-grid-1-2-3 {
+  @apply grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4;
+}
+
+.responsive-grid-1-2-4 {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4;
+}
+
+.responsive-grid-1-3 {
+  @apply grid grid-cols-1 lg:grid-cols-3 gap-4;
+}
+
+/* Mobile-optimized account cards */
+.account-card-mobile {
+  @apply flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-card rounded-xl shadow-subtle hover:shadow-card transition-all duration-300 gap-4 sm:gap-0;
+}
+
+.account-card-mobile .account-info {
+  @apply flex items-center space-x-4 flex-1;
+}
+
+.account-card-mobile .account-actions {
+  @apply flex flex-row sm:flex-row gap-2 w-full sm:w-auto justify-end;
+}
+
+.account-card-mobile .account-balance {
+  @apply text-right w-full sm:w-auto;
+}
+
+/* Mobile-friendly button sizing */
+.mobile-icon-button {
+  @apply h-10 w-10 sm:h-8 sm:w-8;
+}
+
+.mobile-action-button {
+  @apply px-4 py-2 text-sm font-medium;
+}
+
+/* Grid view button improvements */
+.mobile-grid-button {
+  @apply w-full sm:w-auto;
+}
+
 /* Custom animations */
 @keyframes fade-in {
   from {
@@ -139,4 +276,27 @@ body {
 /* Theme transition */
 .theme-transition {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  .mobile-full-width {
+    width: 100%;
+  }
+
+  .mobile-text-center {
+    text-align: center;
+  }
+
+  .mobile-justify-center {
+    justify-content: center;
+  }
+
+  .mobile-show-text-only {
+    display: inline;
+  }
+
+  .mobile-hide-text-only {
+    display: none;
+  }
 }

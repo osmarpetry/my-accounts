@@ -8,13 +8,12 @@ interface SelectContextType {
   value: string;
   onValueChange: (value: string) => void;
   open: boolean;
-  setOpen: (open: boolean) => void;
+  onOpenChange: (open: boolean) => void;
+  triggerId: string;
   contentId: string;
 }
 
-const SelectContext = React.createContext<SelectContextType | undefined>(
-  undefined
-);
+const SelectContext = React.createContext<SelectContextType | null>(null);
 
 interface SelectProps {
   value?: string;
@@ -22,20 +21,22 @@ interface SelectProps {
   children: React.ReactNode;
 }
 
-export function Select({ value, onValueChange, children }: SelectProps) {
+export function Select({ value = "", onValueChange, children }: SelectProps) {
   const [open, setOpen] = React.useState(false);
+  const triggerId = React.useId();
   const contentId = React.useId();
 
-  const contextValue: SelectContextType = {
-    value: value || "",
-    onValueChange: onValueChange || (() => {}),
-    open,
-    setOpen,
-    contentId,
-  };
-
   return (
-    <SelectContext.Provider value={contextValue}>
+    <SelectContext.Provider
+      value={{
+        value,
+        onValueChange: onValueChange || (() => {}),
+        open,
+        onOpenChange: setOpen,
+        triggerId,
+        contentId,
+      }}
+    >
       <div className="relative">{children}</div>
     </SelectContext.Provider>
   );
@@ -52,15 +53,15 @@ const SelectTrigger = React.forwardRef<
     <button
       ref={ref}
       type="button"
-      role="combobox"
-      aria-expanded={context.open ? "true" : "false"}
+      id={context.triggerId}
       aria-haspopup="listbox"
+      aria-expanded={context.open}
       aria-controls={context.contentId}
       className={cn(
-        "flex h-9 w-full items-center justify-between rounded-xl bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:shadow-card disabled:cursor-not-allowed disabled:opacity-50 shadow-subtle transition-all theme-transition",
+        "flex h-9 w-full items-center justify-between rounded-xl bg-background px-3 py-2 text-sm shadow-subtle ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:shadow-card disabled:cursor-not-allowed disabled:opacity-50 shadow-subtle transition-all transition-colors",
         className
       )}
-      onClick={() => context.setOpen(!context.open)}
+      onClick={() => context.onOpenChange(!context.open)}
       {...props}
     >
       {children}
@@ -72,22 +73,20 @@ SelectTrigger.displayName = "SelectTrigger";
 
 const SelectValue = React.forwardRef<
   HTMLSpanElement,
-  React.HTMLAttributes<HTMLSpanElement> & { 
+  React.HTMLAttributes<HTMLSpanElement> & {
     placeholder?: string;
-    displayValue?: string | React.ReactNode;
   }
->(({ className, placeholder, displayValue, ...props }, ref) => {
+>(({ className, placeholder, ...props }, ref) => {
   const context = React.useContext(SelectContext);
   if (!context) throw new Error("SelectValue must be used within Select");
 
-  // Use displayValue if provided, otherwise fall back to context.value or placeholder
-  const valueToShow = displayValue !== undefined 
-    ? displayValue 
-    : context.value || placeholder;
-
   return (
-    <span ref={ref} className={cn("block truncate", className)} {...props}>
-      {valueToShow}
+    <span
+      ref={ref}
+      className={cn("block truncate", className)}
+      {...props}
+    >
+      {context.value || placeholder}
     </span>
   );
 });
@@ -108,7 +107,7 @@ const SelectContent = React.forwardRef<
       id={context.contentId}
       role="listbox"
       className={cn(
-        "absolute z-50 min-w-[8rem] overflow-hidden rounded-xl bg-popover p-1 text-popover-foreground shadow-card animate-in fade-in-0 zoom-in-95 theme-transition",
+        "absolute z-50 min-w-[8rem] overflow-hidden rounded-xl bg-popover p-1 text-popover-foreground shadow-card animate-in fade-in-0 zoom-in-95 transition-colors",
         "top-full mt-1 w-full",
         className
       )}
@@ -122,7 +121,9 @@ SelectContent.displayName = "SelectContent";
 
 const SelectItem = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { value: string }
+  React.HTMLAttributes<HTMLDivElement> & {
+    value: string;
+  }
 >(({ className, children, value, ...props }, ref) => {
   const context = React.useContext(SelectContext);
   if (!context) throw new Error("SelectItem must be used within Select");
@@ -131,14 +132,15 @@ const SelectItem = React.forwardRef<
     <div
       ref={ref}
       role="option"
-      aria-selected={context.value === value ? "true" : "false"}
+      aria-selected={context.value === value}
       className={cn(
-        "relative flex w-full cursor-default select-none items-center rounded-lg py-1.5 pl-2 pr-8 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 transition-colors",
+        "relative flex w-full cursor-default select-none items-center rounded-lg py-1.5 pl-2 pr-8 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        context.value === value && "bg-accent text-accent-foreground",
         className
       )}
       onClick={() => {
         context.onValueChange(value);
-        context.setOpen(false);
+        context.onOpenChange(false);
       }}
       {...props}
     >

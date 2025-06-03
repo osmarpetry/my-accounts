@@ -332,30 +332,22 @@ export function TransferForm({
                     setFormData({ ...formData, fromAccountId: value, toAccountId: "" })
                 }
               >
-                <SelectTrigger
-                  id="fromAccount"
-                  className={errors.fromAccountId ? "border-destructive" : ""}
-                    data-testid="from-account-select"
-                >
-                    <SelectValue 
-                      placeholder={t("fromAccount")}
-                      displayValue={formData.fromAccountId ? (() => {
+                <SelectTrigger className="mobile-touch-target">
+                  <SelectValue placeholder={t("selectFromAccount")}>
+                    {formData.fromAccountId && (() => {
                       const selectedAccount = availableFromAccounts.find(acc => acc.id === formData.fromAccountId);
                       return selectedAccount ? (
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">
-                            {selectedAccount.accountHolder}
-                          </span>
-                          <Badge variant="outline" className="text-xs">
-                            {t(selectedAccount.accountType)}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            #{selectedAccount.accountNumber} • {t("ownerId")}: {selectedAccount.ownerId}
-                          </span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium truncate">{selectedAccount.accountHolder}</div>
+                            <div className="text-sm text-muted-foreground truncate">
+                              {selectedAccount.accountNumber} • {t(selectedAccount.accountType)}
+                            </div>
+                          </div>
                         </div>
                       ) : null;
-                      })() : undefined}
-                    />
+                    })()}
+                  </SelectValue>
                 </SelectTrigger>
                   <SelectContent data-testid="from-account-options">
                   {availableFromAccounts.map((account) => (
@@ -411,30 +403,22 @@ export function TransferForm({
                     setFormData({ ...formData, toAccountId: value })
                   }
                 >
-                  <SelectTrigger
-                    id="toAccount"
-                    className={errors.toAccountId ? "border-destructive" : ""}
-                    data-testid="to-account-select"
-                  >
-                    <SelectValue 
-                      placeholder={t("toAccount")}
-                      displayValue={formData.toAccountId ? (() => {
+                  <SelectTrigger className="mobile-touch-target">
+                    <SelectValue placeholder={t("selectToAccount")}>
+                      {formData.toAccountId && (() => {
                         const selectedAccount = availableToAccounts.find(acc => acc.id === formData.toAccountId);
                         return selectedAccount ? (
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">
-                              {selectedAccount.accountHolder}
-                            </span>
-                            <Badge variant="outline" className="text-xs">
-                              {t(selectedAccount.accountType)}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">
-                              #{selectedAccount.accountNumber} • {t("ownerId")}: {selectedAccount.ownerId}
-                            </span>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="min-w-0 flex-1">
+                              <div className="font-medium truncate">{selectedAccount.accountHolder}</div>
+                              <div className="text-sm text-muted-foreground truncate">
+                                {selectedAccount.accountNumber} • {t(selectedAccount.accountType)}
+                              </div>
+                            </div>
                           </div>
                         ) : null;
-                      })() : undefined}
-                    />
+                      })()}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent data-testid="to-account-options">
                     {availableToAccounts.map((account) => (

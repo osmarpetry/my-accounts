@@ -465,14 +465,13 @@ export function AccountForm({
                       handleFieldChange("accountType", value as AccountType)
                     }
                   >
-                    <SelectTrigger id="accountType" className="w-full cursor-pointer" data-testid="account-type-select">
-                      <SelectValue 
-                        placeholder={t("selectAccountType")}
-                        displayValue={(() => {
+                    <SelectTrigger className="mobile-touch-target">
+                      <SelectValue placeholder={t("selectAccountType")}>
+                        {(() => {
                           const selectedType = accountTypes.find(type => type.value === formData.accountType);
                           return selectedType ? selectedType.label : undefined;
                         })()}
-                      />
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent data-testid="account-type-options">
                       {accountTypes.map((type) => (
@@ -543,21 +542,21 @@ export function AccountForm({
                     handleFieldChange("currency", value)
                   }
                 >
-                  <SelectTrigger id="currency" className="w-full cursor-pointer" data-testid="currency-select">
-                    <SelectValue 
-                      placeholder={t("selectCurrency")}
-                      displayValue={(() => {
+                  <SelectTrigger className="mobile-touch-target">
+                    <SelectValue placeholder={t("selectCurrency")}>
+                      {formData.currency && (() => {
                         const selectedCurrency = supportedCurrencies.find(currency => currency.value === formData.currency);
                         return selectedCurrency ? (
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">{selectedCurrency.label}</span>
-                            <span className="text-sm text-muted-foreground">
+                            <span className="font-mono text-sm w-6">{getCurrencySymbol(selectedCurrency.value)}</span>
+                            <span className="font-medium">{selectedCurrency.value}</span>
+                            <span className="text-muted-foreground text-sm hidden sm:inline">
                               {selectedCurrency.description}
                             </span>
                           </div>
-                        ) : undefined;
+                        ) : null;
                       })()}
-                    />
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent data-testid="currency-options">
                     {supportedCurrencies.map((currency) => (

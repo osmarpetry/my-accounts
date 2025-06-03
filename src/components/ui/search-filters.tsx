@@ -42,7 +42,8 @@ import {
   Building2,
   Hash,
   DollarSign,
-  RotateCcw
+  RotateCcw,
+  Settings
 } from "lucide-react";
 
 interface SearchFiltersProps {
@@ -68,6 +69,7 @@ export function SearchFilters({
 }: SearchFiltersProps) {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(true); // Default to expanded for E2E testing
+  const [isAdvancedExpanded, setIsAdvancedExpanded] = useState(false); // Advanced filters collapsed by default
   const supportedCurrencies = getSupportedCurrencies();
 
   const updateCriteria = (updates: Partial<SearchCriteria>) => {
@@ -84,35 +86,49 @@ export function SearchFilters({
     key => key !== 'query' && searchCriteria[key as keyof SearchCriteria] !== undefined
   );
 
+  const hasAdvancedFilters = searchCriteria.ownerId || 
+    searchCriteria.minBalance !== undefined || 
+    searchCriteria.maxBalance !== undefined;
+
   const activeFilterCount = Object.values(searchCriteria).filter(value => 
     value !== undefined && value !== ""
   ).length;
 
   return (
     <Card className="w-full" data-testid="search-filters-card">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Search className="h-5 w-5 text-primary" />
-            <span>{t("search")} & {t("filters")}</span>
+      <CardHeader className="pb-3 mobile-card-padding">
+        <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <Search className="h-5 w-5 text-primary flex-shrink-0" />
+            <span className="truncate">{t("search")} & {t("filters")}</span>
             {activeFilterCount > 0 && (
-              <Badge variant="secondary" className="ml-2" data-testid="active-filter-count">
+              <Badge variant="secondary" className="ml-2 flex-shrink-0" data-testid="active-filter-count">
                 {activeFilterCount}
               </Badge>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between sm:justify-end gap-2">
             {resultCount !== undefined && totalCount !== undefined && (
-              <span className="text-sm text-muted-foreground" data-testid="results-count">
-                {resultCount === totalCount 
-                  ? `${totalCount} accounts`
-                  : `${resultCount} of ${totalCount} accounts`
-                }
+              <span className="text-sm text-muted-foreground mobile-text-responsive" data-testid="results-count">
+                <span className="hidden sm:inline">
+                  {resultCount === totalCount 
+                    ? `${totalCount} accounts`
+                    : `${resultCount} of ${totalCount} accounts`
+                  }
+                </span>
+                <span className="sm:hidden">
+                  {resultCount}/{totalCount}
+                </span>
               </span>
             )}
             <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
               <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" data-testid="filters-toggle">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 mobile-touch-target" 
+                  data-testid="filters-toggle"
+                >
                   {isExpanded ? (
                     <ChevronUp className="h-4 w-4" />
                   ) : (
@@ -125,7 +141,7 @@ export function SearchFilters({
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 mobile-card-padding pt-0">
         {/* Main Search - Full Width */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -133,14 +149,14 @@ export function SearchFilters({
             placeholder={t("searchByName")}
             value={searchCriteria.query || ""}
             onChange={(e) => updateCriteria({ query: e.target.value || undefined })}
-            className="pl-10 pr-10"
+            className="pl-10 pr-10 mobile-touch-target"
             data-testid="search-input"
           />
           {searchCriteria.query && (
             <Button
               variant="ghost"
               size="sm"
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 mobile-touch-target"
               onClick={() => clearField('query')}
               data-testid="clear-search-button"
             >
@@ -152,12 +168,12 @@ export function SearchFilters({
         <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
           <CollapsibleContent className="space-y-4">
             {/* Quick Filters Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="mobile-filters-grid">
               {/* Account Type Filter */}
               <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4" />
-                  {t("accountType")}
+                <Label className="flex items-center gap-2 mobile-text-responsive">
+                  <Building2 className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">{t("accountType")}</span>
                 </Label>
                 <Select
                   value={searchCriteria.accountType || ""}
@@ -166,19 +182,18 @@ export function SearchFilters({
                   }
                   data-testid="account-type-filter"
                 >
-                  <SelectTrigger data-testid="account-type-select">
-                    <SelectValue 
-                      placeholder={t("filterByType")}
-                      displayValue={searchCriteria.accountType ? (() => {
+                  <SelectTrigger data-testid="account-type-select" className="mobile-touch-target">
+                    <SelectValue placeholder={t("filterByType")}>
+                      {searchCriteria.accountType && (() => {
                         const selectedType = accountTypes.find(type => type.value === searchCriteria.accountType);
                         return selectedType ? (
                           <div className="flex items-center gap-2">
                             <selectedType.icon className="h-4 w-4" />
                             <span>{t(selectedType.value)}</span>
                           </div>
-                        ) : undefined;
-                      })() : undefined}
-                    />
+                        ) : null;
+                      })()}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent data-testid="account-type-options">
                     <SelectItem value="" data-testid="account-type-option-all">All Types</SelectItem>
@@ -196,9 +211,9 @@ export function SearchFilters({
 
               {/* Currency Filter */}
               <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  {t("currency")}
+                <Label className="flex items-center gap-2 mobile-text-responsive">
+                  <DollarSign className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">{t("currency")}</span>
                 </Label>
                 <Select
                   value={searchCriteria.currency || ""}
@@ -207,32 +222,24 @@ export function SearchFilters({
                   }
                   data-testid="currency-filter"
                 >
-                  <SelectTrigger data-testid="currency-select">
-                    <SelectValue 
-                      placeholder={t("filterByCurrency")}
-                      displayValue={searchCriteria.currency ? (
+                  <SelectTrigger data-testid="currency-select" className="mobile-touch-target">
+                    <SelectValue placeholder={t("filterByCurrency")}>
+                      {searchCriteria.currency && (
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">
-                            {getCurrencySymbol(searchCriteria.currency)}
-                          </span>
+                          <span className="font-mono text-sm">{getCurrencySymbol(searchCriteria.currency)}</span>
                           <span>{searchCriteria.currency}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {getCurrencyName(searchCriteria.currency)}
-                          </span>
                         </div>
-                      ) : undefined}
-                    />
+                      )}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent data-testid="currency-options">
                     <SelectItem value="" data-testid="currency-option-all">All Currencies</SelectItem>
                     {supportedCurrencies.map((currency) => (
                       <SelectItem key={currency} value={currency} data-testid={`currency-option-${currency}`}>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">
-                            {getCurrencySymbol(currency)}
-                          </span>
-                          <span>{currency}</span>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="font-mono text-sm w-6">{getCurrencySymbol(currency)}</span>
+                          <span className="font-medium">{currency}</span>
+                          <span className="text-muted-foreground text-sm hidden sm:inline">
                             {getCurrencyName(currency)}
                           </span>
                         </div>
@@ -244,9 +251,12 @@ export function SearchFilters({
 
               {/* Status Filter */}
               <div className="space-y-2">
-                <Label>{t("status")}</Label>
+                <Label className="flex items-center gap-2 mobile-text-responsive">
+                  <Hash className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">{t("status")}</span>
+                </Label>
                 <Select
-                  value={searchCriteria.isActive?.toString() || ""}
+                  value={searchCriteria.isActive !== undefined ? searchCriteria.isActive.toString() : ""}
                   onValueChange={(value) => 
                     updateCriteria({ 
                       isActive: value === "" ? undefined : value === "true" 
@@ -254,157 +264,192 @@ export function SearchFilters({
                   }
                   data-testid="status-filter"
                 >
-                  <SelectTrigger data-testid="status-select">
-                    <SelectValue 
-                      placeholder={t("filterByStatus")}
-                      displayValue={searchCriteria.isActive !== undefined ? (
-                        searchCriteria.isActive ? t("active") : t("inactive")
-                      ) : undefined}
-                    />
+                  <SelectTrigger data-testid="status-select" className="mobile-touch-target">
+                    <SelectValue placeholder={t("filterByStatus")}>
+                      {searchCriteria.isActive !== undefined && (
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${searchCriteria.isActive ? 'bg-green-500' : 'bg-gray-400'}`} />
+                          <span>{searchCriteria.isActive ? t("active") : t("inactive")}</span>
+                        </div>
+                      )}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent data-testid="status-options">
-                    <SelectItem value="" data-testid="status-option-all">All Statuses</SelectItem>
-                    <SelectItem value="true" data-testid="status-option-active">{t("active")}</SelectItem>
-                    <SelectItem value="false" data-testid="status-option-inactive">{t("inactive")}</SelectItem>
+                    <SelectItem value="" data-testid="status-option-all">All Status</SelectItem>
+                    <SelectItem value="true" data-testid="status-option-active">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        <span>{t("active")}</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="false" data-testid="status-option-inactive">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-gray-400" />
+                        <span>{t("inactive")}</span>
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            {/* Advanced Filters Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t">
-              {/* Owner ID Filter */}
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Hash className="h-4 w-4" />
-                  {t("ownerId")}
-                </Label>
-                <Input
-                  type="text"
-                  placeholder="000123"
-                  value={searchCriteria.ownerId || ""}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, "");
-                    if (value.length <= 6) {
-                      updateCriteria({ 
-                        ownerId: value || undefined 
-                      });
-                    }
-                  }}
-                  maxLength={6}
-                  data-testid="owner-id-input"
-                />
-              </div>
+            {/* Advanced Filters Collapsible Section */}
+            <div className="pt-2">
+              <Collapsible open={isAdvancedExpanded} onOpenChange={setIsAdvancedExpanded}>
+                <CollapsibleTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="flex items-center justify-between w-full p-2 h-auto mobile-touch-target"
+                    data-testid="advanced-filters-toggle"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      <span className="text-sm font-medium">{t("advancedFilters")}</span>
+                      {hasAdvancedFilters && (
+                        <Badge variant="secondary" className="ml-2">
+                          {[searchCriteria.ownerId, searchCriteria.minBalance, searchCriteria.maxBalance].filter(Boolean).length}
+                        </Badge>
+                      )}
+                    </div>
+                    {isAdvancedExpanded ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
+                  </Button>
+                </CollapsibleTrigger>
+                
+                <CollapsibleContent className="mobile-advanced-filters pt-3">
+                  <div className="space-y-4 border-t pt-4">
+                    {/* Owner ID Filter */}
+                    <div className="space-y-2">
+                      <Label htmlFor="owner-id-filter" className="flex items-center gap-2 mobile-text-responsive">
+                        <Hash className="h-4 w-4 flex-shrink-0" />
+                        <span>{t("ownerId")}</span>
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="owner-id-filter"
+                          placeholder={t("filterByOwnerId")}
+                          value={searchCriteria.ownerId || ""}
+                          onChange={(e) => updateCriteria({ ownerId: e.target.value || undefined })}
+                          className="pr-8 mobile-touch-target"
+                          data-testid="owner-id-filter"
+                        />
+                        {searchCriteria.ownerId && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 mobile-touch-target"
+                            onClick={() => clearField('ownerId')}
+                            data-testid="clear-owner-id-button"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
 
-              {/* Min Balance Filter */}
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  {t("minBalance")}
-                </Label>
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  value={searchCriteria.minBalance?.toString() || ""}
-                  onChange={(e) => 
-                    updateCriteria({ 
-                      minBalance: e.target.value ? parseFloat(e.target.value) : undefined 
-                    })
-                  }
-                  min="0"
-                  step="0.01"
-                  data-testid="min-balance-input"
-                />
-              </div>
+                    {/* Balance Range Filters */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="min-balance-filter" className="flex items-center gap-2 mobile-text-responsive">
+                          <DollarSign className="h-4 w-4 flex-shrink-0" />
+                          <span>{t("minBalance")}</span>
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id="min-balance-filter"
+                            type="number"
+                            placeholder="0.00"
+                            value={searchCriteria.minBalance || ""}
+                            onChange={(e) => updateCriteria({ 
+                              minBalance: e.target.value ? parseFloat(e.target.value) : undefined 
+                            })}
+                            className="pr-8 mobile-touch-target"
+                            data-testid="min-balance-filter"
+                          />
+                          {searchCriteria.minBalance !== undefined && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 mobile-touch-target"
+                              onClick={() => clearField('minBalance')}
+                              data-testid="clear-min-balance-button"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
 
-              {/* Max Balance Filter */}
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  {t("maxBalance")}
-                </Label>
-                <Input
-                  type="number"
-                  placeholder="1000000.00"
-                  value={searchCriteria.maxBalance?.toString() || ""}
-                  onChange={(e) => 
-                    updateCriteria({ 
-                      maxBalance: e.target.value ? parseFloat(e.target.value) : undefined 
-                    })
-                  }
-                  min="0"
-                  step="0.01"
-                  data-testid="max-balance-input"
-                />
-              </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="max-balance-filter" className="flex items-center gap-2 mobile-text-responsive">
+                          <DollarSign className="h-4 w-4 flex-shrink-0" />
+                          <span>{t("maxBalance")}</span>
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id="max-balance-filter"
+                            type="number"
+                            placeholder="999999.99"
+                            value={searchCriteria.maxBalance || ""}
+                            onChange={(e) => updateCriteria({ 
+                              maxBalance: e.target.value ? parseFloat(e.target.value) : undefined 
+                            })}
+                            className="pr-8 mobile-touch-target"
+                            data-testid="max-balance-filter"
+                          />
+                          {searchCriteria.maxBalance !== undefined && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 mobile-touch-target"
+                              onClick={() => clearField('maxBalance')}
+                              data-testid="clear-max-balance-button"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
             </div>
 
-            {/* Active Filters & Clear Button */}
-            {hasActiveFilters && (
-              <div className="flex items-center justify-between pt-2 border-t" data-testid="active-filters-section">
-                <div className="flex flex-wrap gap-2">
-                  {searchCriteria.accountType && (
-                    <Badge variant="secondary" className="gap-1" data-testid="account-type-badge">
-                      Type: {t(searchCriteria.accountType)}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-4 w-4 p-0 ml-1"
-                        onClick={() => clearField('accountType')}
-                        data-testid="remove-account-type-filter"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </Badge>
-                  )}
-                  {searchCriteria.currency && (
-                    <Badge variant="secondary" className="gap-1" data-testid="currency-badge">
-                      {searchCriteria.currency}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-4 w-4 p-0 ml-1"
-                        onClick={() => clearField('currency')}
-                        data-testid="remove-currency-filter"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </Badge>
-                  )}
-                  {searchCriteria.isActive !== undefined && (
-                    <Badge variant="secondary" className="gap-1" data-testid="status-badge">
-                      Status: {searchCriteria.isActive ? t("active") : t("inactive")}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-4 w-4 p-0 ml-1"
-                        onClick={() => clearField('isActive')}
-                        data-testid="remove-status-filter"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </Badge>
-                  )}
-                </div>
+            {/* Action Buttons */}
+            {(hasActiveFilters || searchCriteria.query) && (
+              <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="outline"
-                        size="sm"
                         onClick={onClearFilters}
-                        className="gap-2"
+                        className="flex items-center gap-2 mobile-action-button mobile-touch-target"
                         data-testid="clear-all-filters-button"
                       >
                         <RotateCcw className="h-4 w-4" />
-                        {t("clearFilters")}
+                        <span>{t("clearAllFilters")}</span>
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Clear all active filters</p>
+                      <p>{t("resetAllSearchAndFilterCriteria")}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
+                
+                <div className="flex-1 sm:flex-none">
+                  <div className="text-sm text-muted-foreground text-center sm:text-left mobile-text-responsive">
+                    {activeFilterCount > 0 && (
+                      <span>
+                        {activeFilterCount} {activeFilterCount === 1 ? 'filter' : 'filters'} applied
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
           </CollapsibleContent>

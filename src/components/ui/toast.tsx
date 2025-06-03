@@ -254,19 +254,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
             ))}
           </div>
 
-          {/* Scroll to Top Button */}
-          {showScrollToTop && (
-            <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-40">
-              <Button
-                onClick={scrollToTop}
-                size="sm"
-                className="rounded-full shadow-lg backdrop-blur-sm bg-primary/90 hover:bg-primary animate-in slide-in-from-bottom-3 duration-200 transition-all hover:scale-105"
-              >
-                <ArrowUp className="h-4 w-4 mr-2" />
-                Back to top
-              </Button>
-            </div>
-          )}
+
         </>,
         document.body
       )}

@@ -42,7 +42,6 @@ import {
   PiggyBank,
   Eye,
   ArrowRight,
-  Send,
 } from "lucide-react";
 import { BankAccount, AccountType } from "@/types";
 import { useToast } from "@/components/ui/toast";
@@ -415,42 +414,42 @@ export default function HomePage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 sm:space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             {t("bankManagementSystem")}
           </h1>
-          <p className="text-muted-foreground mt-1">{t("accounts")}</p>
+          <p className="text-muted-foreground mt-1 mobile-text-responsive">{t("accounts")}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="mobile-button-group">
           <Button
             onClick={() => setShowTransferForm(true)}
             variant="outline"
-            className="flex items-center gap-2"
+            className="mobile-action-button mobile-touch-target"
             disabled={accounts.filter(acc => acc.isActive).length < 2}
             data-testid="transfer-button-header"
           >
             <ArrowRightLeft className="h-4 w-4" />
-            {t("transfer")}
+            <span className="ml-2">{t("transfer")}</span>
           </Button>
           <Button
             onClick={handleCreateAccount}
-            className="flex items-center gap-2"
+            className="mobile-action-button mobile-touch-target"
             data-testid="create-account-button"
           >
             <Plus className="h-4 w-4" />
-            {t("createAccount")}
+            <span className="ml-2">{t("createAccount")}</span>
           </Button>
         </div>
       </div>
 
       {/* Accounts Summary - replaces filters with cleaner design */}
       <Card className="border-l-4 border-l-primary/20">
-        <CardContent className="py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <CardContent className="mobile-card-padding py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">
@@ -459,8 +458,8 @@ export default function HomePage() {
                     : `${t("showing")} ${displayAccounts.length} ${t("accounts")}`}
                 </span>
               </div>
-              <div className="h-4 w-px bg-border" />
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="h-px sm:h-4 w-full sm:w-px bg-border" />
+              <div className="flex items-center gap-3 sm:gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <div className="w-2 h-2 rounded-full bg-green-500" />
                   <span>{activeAccounts} {t("active").toLowerCase()}</span>
@@ -481,16 +480,16 @@ export default function HomePage() {
       </Card>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="theme-transition">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <div className="responsive-grid-1-3">
+        <Card className="transition-all duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 mobile-card-padding">
             <CardTitle className="text-sm font-medium">
               {t("balance")}
             </CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+          <CardContent className="mobile-card-padding pt-0">
+            <div className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
               {formatCurrency(totalBalance, defaultCurrency)}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -499,15 +498,15 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        <Card className="theme-transition">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="transition-all duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 mobile-card-padding">
             <CardTitle className="text-sm font-medium">
               {t("accounts")}
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeAccounts}</div>
+          <CardContent className="mobile-card-padding pt-0">
+            <div className="text-xl sm:text-2xl font-bold">{activeAccounts}</div>
             <p className="text-xs text-muted-foreground">
               {accounts.length - activeAccounts}{" "}
               {t("inactive").toLowerCase()}
@@ -515,15 +514,15 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        <Card className="theme-transition">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="transition-all duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 mobile-card-padding">
             <CardTitle className="text-sm font-medium">
               {t("accountType")}
             </CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{accounts.length}</div>
+          <CardContent className="mobile-card-padding pt-0">
+            <div className="text-xl sm:text-2xl font-bold">{accounts.length}</div>
             <p className="text-xs text-muted-foreground">
               {t("totalManaged")}
             </p>
@@ -532,8 +531,8 @@ export default function HomePage() {
       </div>
 
       {/* Accounts List - Show Only First Account */}
-      <Card className="theme-transition">
-        <CardHeader>
+      <Card className="transition-all duration-300">
+        <CardHeader className="mobile-card-padding">
           <CardTitle>{t("accounts")}</CardTitle>
           <CardDescription>
             {accounts.length <= 3 
@@ -541,37 +540,41 @@ export default function HomePage() {
               : `${t("showing")} 3 ${t("of")} ${accounts.length} ${t("accounts")}`}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="mobile-card-padding pt-0">
           {displayAccounts.length === 0 ? (
-            <div className="text-center py-8">
-              <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">
+            <div className="text-center py-6 sm:py-8">
+              <CreditCard className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-base sm:text-lg font-medium text-foreground mb-2">
                 {t("noAccountsFound")}
               </h3>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-sm text-muted-foreground mb-4">
                 {t("createFirstAccount")}
               </p>
-              <Button onClick={handleCreateAccount} data-testid="create-account-button-empty">
+              <Button 
+                onClick={handleCreateAccount} 
+                data-testid="create-account-button-empty"
+                className="mobile-action-button mobile-touch-target"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 {t("createAccount")}
               </Button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {displayAccounts.map((account) => (
                 <div
                   key={account.id}
-                  className="flex items-center justify-between p-4 bg-card rounded-xl shadow-subtle hover:shadow-card transition-all theme-transition"
+                  className="account-card-mobile"
                 >
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                  <div className="account-info">
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
                       {getAccountTypeIcon(account.accountType)}
                     </div>
-                    <div>
-                      <h3 className="font-medium text-foreground">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-medium text-foreground truncate">
                         {account.accountHolder}
                       </h3>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground truncate">
                         {account.accountNumber} • {t(account.accountType)}
                       </p>
                       <p className="text-xs text-muted-foreground">
@@ -579,9 +582,10 @@ export default function HomePage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="font-semibold text-lg">
+                  
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                    <div className="account-balance">
+                      <div className="font-semibold text-base sm:text-lg">
                         {formatCurrency(account.balance, account.currency)}
                       </div>
                       {account.currency !== defaultCurrency && (
@@ -602,13 +606,14 @@ export default function HomePage() {
                         </span>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    
+                    <div className="account-actions">
                       {account.isActive && accounts.filter(acc => acc.isActive && acc.id !== account.id).length > 0 && (
                         <Button
                           variant="outline"
                           size="icon"
                           onClick={() => handleTransferClick(account)}
-                          className="h-8 w-8"
+                          className="mobile-icon-button mobile-touch-target"
                           title={t("transfer")}
                           data-testid={`transfer-button-${account.id}`}
                         >
@@ -619,7 +624,7 @@ export default function HomePage() {
                         variant="outline"
                         size="icon"
                         onClick={() => handleEditAccount(account)}
-                        className="h-8 w-8"
+                        className="mobile-icon-button mobile-touch-target"
                         data-testid="edit-account-button"
                         title={t("edit")}
                       >
@@ -629,7 +634,7 @@ export default function HomePage() {
                         variant="outline"
                         size="icon"
                         onClick={() => handleDeleteClick(account)}
-                        className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
+                        className="mobile-icon-button mobile-touch-target hover:bg-destructive hover:text-destructive-foreground"
                         title={t("delete")}
                         data-testid="delete-account-button"
                       >
@@ -646,11 +651,11 @@ export default function HomePage() {
                   <Link href="/accounts" className="block">
                     <Button
                       variant="outline"
-                      className="w-full flex items-center justify-center gap-2"
+                      className="w-full flex items-center justify-center gap-2 mobile-action-button mobile-touch-target"
                     >
                       <Eye className="h-4 w-4" />
-                      {t("viewAllAccounts")}
-                      <span className="text-sm text-muted-foreground">
+                      <span>{t("viewAllAccounts")}</span>
+                      <span className="text-sm text-muted-foreground mobile-hide-text">
                         ({accounts.length - 3} more)
                       </span>
                       <ArrowRight className="h-4 w-4" />

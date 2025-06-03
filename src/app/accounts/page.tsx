@@ -91,8 +91,6 @@ const ITEMS_PER_PAGE_OPTIONS = [
   { value: "all", label: "Show all" },
 ];
 
-const DEFAULT_ITEMS_PER_PAGE = 6;
-
 // Simple confirmation dialog component
 interface ConfirmDialogProps {
   open: boolean;
@@ -417,47 +415,47 @@ export default function AllAccountsPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 sm:space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 min-w-0">
           <Link href="/">
           <Button
             variant="ghost"
             size="sm"
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 self-start mobile-touch-target"
           >
             <ArrowLeft className="h-4 w-4" />
-            {t("back")}
+            <span >{t("back")}</span>
           </Button>
           </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
               {t("allAccounts")}
             </h1>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-muted-foreground mt-1 mobile-text-responsive">
               Manage all your bank accounts
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="mobile-button-group">
           <Button
             onClick={() => setShowTransferForm(true)}
             variant="outline"
-            className="flex items-center gap-2"
+            className="mobile-grid-button"
             disabled={accounts.filter(acc => acc.isActive).length < 2}
             data-testid="transfer-button-header"
           >
             <ArrowRightLeft className="h-4 w-4" />
-            {t("transfer")}
+            <span className="ml-2">{t("transfer")}</span>
           </Button>
           <Button
             onClick={handleCreateAccount}
-            className="flex items-center gap-2"
+            className="mobile-grid-button"
             data-testid="create-account-button"
           >
             <Plus className="h-4 w-4" />
-            {t("createAccount")}
+            <span className="ml-2">{t("createAccount")}</span>
           </Button>
         </div>
       </div>
@@ -472,54 +470,54 @@ export default function AllAccountsPage() {
       />
 
       {/* Stats Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="responsive-grid-1-2-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 mobile-card-padding">
             <CardTitle className="text-sm font-medium">{t("balance")}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+          <CardContent className="mobile-card-padding pt-0">
+            <div className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
               {formatCurrency(totalBalance)}
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 mobile-card-padding">
             <CardTitle className="text-sm font-medium">{t("accounts")}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{accounts.length}</div>
+          <CardContent className="mobile-card-padding pt-0">
+            <div className="text-xl sm:text-2xl font-bold">{accounts.length}</div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 mobile-card-padding">
             <CardTitle className="text-sm font-medium">{t("active")}</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{activeAccounts}</div>
+          <CardContent className="mobile-card-padding pt-0">
+            <div className="text-xl sm:text-2xl font-bold text-green-600">{activeAccounts}</div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 mobile-card-padding">
             <CardTitle className="text-sm font-medium">{t("filtered")}</CardTitle>
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{sortedFilteredAccounts.length}</div>
+          <CardContent className="mobile-card-padding pt-0">
+            <div className="text-xl sm:text-2xl font-bold">{sortedFilteredAccounts.length}</div>
           </CardContent>
         </Card>
       </div>
 
       {/* Accounts Section */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
+        <CardHeader className="mobile-card-padding">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
@@ -535,49 +533,51 @@ export default function AllAccountsPage() {
             </div>
             
             {/* Sort, View Toggle, and Items Per Page */}
-            <div className="flex items-center gap-3">
-              {/* Items Per Page */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground hidden sm:inline">Show:</span>
-                <Select value={itemsPerPage} onValueChange={setItemsPerPage}>
-                  <SelectTrigger className="w-[120px]">
-                    <SelectValue 
-                      displayValue={(() => {
-                        const selectedOption = ITEMS_PER_PAGE_OPTIONS.find(option => option.value === itemsPerPage);
-                        return selectedOption ? selectedOption.label : itemsPerPage;
-                      })()}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ITEMS_PER_PAGE_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="mobile-pagination-controls">
+              {/* Items Per Page - Mobile First */}
+              <div className="mobile-pagination-stack">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground hidden lg:inline">Show:</span>
+                  <Select value={itemsPerPage} onValueChange={setItemsPerPage}>
+                    <SelectTrigger className="w-full sm:w-[120px] mobile-touch-target">
+                      <SelectValue>
+                        {(() => {
+                          const selectedOption = ITEMS_PER_PAGE_OPTIONS.find(option => option.value === itemsPerPage);
+                          return selectedOption ? selectedOption.label : itemsPerPage;
+                        })()}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* Sort Dropdown */}
-              <div className="flex items-center gap-2">
-                <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
-                <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue
-                      displayValue={(() => {
-                        const selectedOption = sortOptions.find(option => option.value === sortBy);
-                        return selectedOption ? selectedOption.label : sortBy;
-                      })()}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sortOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Sort Dropdown */}
+                <div className="flex items-center gap-2">
+                  <ArrowUpDown className="h-4 w-4 text-muted-foreground hidden sm:block" />
+                  <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                    <SelectTrigger className="w-full sm:w-[200px] mobile-touch-target">
+                      <SelectValue>
+                        {(() => {
+                          const selectedOption = sortOptions.find(option => option.value === sortBy);
+                          return selectedOption ? selectedOption.label : sortBy;
+                        })()}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sortOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               {/* View Toggle */}
@@ -586,41 +586,51 @@ export default function AllAccountsPage() {
                   variant={viewMode === "list" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("list")}
-                  className="px-3"
+                  className="flex-1 sm:flex-none px-3 mobile-touch-target"
                 >
                   <List className="h-4 w-4" />
+                  <span className="ml-2 sm:hidden">List</span>
                 </Button>
                 <Button
                   variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("grid")}
-                  className="px-3"
+                  className="flex-1 sm:flex-none px-3 mobile-touch-target"
                 >
                   <LayoutGrid className="h-4 w-4" />
+                  <span className="ml-2 sm:hidden">Grid</span>
                 </Button>
               </div>
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="mobile-card-padding pt-0">
           {sortedFilteredAccounts.length === 0 ? (
-            <div className="text-center py-8">
-              <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">
+            <div className="text-center py-6 sm:py-8">
+              <CreditCard className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-base sm:text-lg font-medium text-foreground mb-2">
                 {accounts.length === 0 ? t("noAccountsFound") : t("noMatchingAccounts")}
               </h3>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-sm text-muted-foreground mb-4">
                 {accounts.length === 0 
                   ? t("createFirstAccount")
                   : t("adjustSearchCriteria")}
               </p>
               {accounts.length === 0 ? (
-                <Button onClick={handleCreateAccount} data-testid="create-account-button-empty">
+                <Button 
+                  onClick={handleCreateAccount} 
+                  data-testid="create-account-button-empty"
+                  className="mobile-action-button mobile-touch-target"
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   {t("createAccount")}
                 </Button>
               ) : (
-                <Button onClick={handleClearFilters} variant="outline">
+                <Button 
+                  onClick={handleClearFilters} 
+                  variant="outline"
+                  className="mobile-action-button mobile-touch-target"
+                >
                   {t("clearFilters")}
                 </Button>
               )}
@@ -629,21 +639,21 @@ export default function AllAccountsPage() {
             <>
               {/* Accounts Display */}
               {viewMode === "list" ? (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {paginatedAccounts.map((account) => (
                     <div
                       key={account.id}
-                      className="flex items-center justify-between p-4 bg-card rounded-xl shadow-subtle hover:shadow-card transition-all theme-transition"
+                      className="account-card-mobile"
                     >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                      <div className="account-info">
+                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
                           {getAccountTypeIcon(account.accountType)}
                         </div>
-                        <div>
-                          <h3 className="font-medium text-foreground">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-medium text-foreground truncate">
                             {account.accountHolder}
                           </h3>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-muted-foreground truncate">
                             {account.accountNumber} • {t(account.accountType)}
                           </p>
                           <p className="text-xs text-muted-foreground">
@@ -651,9 +661,10 @@ export default function AllAccountsPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <div className="font-semibold text-lg">
+                      
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                        <div className="account-balance">
+                          <div className="font-semibold text-base sm:text-lg">
                             {formatCurrency(account.balance, account.currency)}
                           </div>
                           <div className="flex items-center gap-2 mt-1">
@@ -667,13 +678,14 @@ export default function AllAccountsPage() {
                             </span>
                           </div>
                         </div>
-                        <div className="flex gap-2">
+                        
+                        <div className="account-actions">
                           {account.isActive && accounts.filter(acc => acc.isActive && acc.id !== account.id).length > 0 && (
                             <Button
                               variant="outline"
                               size="icon"
                               onClick={() => handleTransferClick(account)}
-                              className="h-8 w-8"
+                              className="mobile-icon-button mobile-touch-target"
                               title={t("transfer")}
                               data-testid={`transfer-button-${account.id}`}
                             >
@@ -684,7 +696,7 @@ export default function AllAccountsPage() {
                             variant="outline"
                             size="icon"
                             onClick={() => handleEditAccount(account)}
-                            className="h-8 w-8"
+                            className="mobile-icon-button mobile-touch-target"
                             data-testid="edit-account-button"
                             title={t("edit")}
                           >
@@ -694,7 +706,7 @@ export default function AllAccountsPage() {
                             variant="outline"
                             size="icon"
                             onClick={() => handleDeleteClick(account)}
-                            className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
+                            className="mobile-icon-button mobile-touch-target hover:bg-destructive hover:text-destructive-foreground"
                             title={t("delete")}
                             data-testid="delete-account-button"
                           >
@@ -706,33 +718,33 @@ export default function AllAccountsPage() {
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="responsive-grid-1-2-3">
                   {paginatedAccounts.map((account) => (
                     <Card key={account.id} className="hover:shadow-card transition-all">
-                      <CardHeader className="pb-3">
+                      <CardHeader className="pb-3 mobile-card-padding">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
                               {getAccountTypeIcon(account.accountType)}
                             </div>
-                            <div>
-                              <CardTitle className="text-base">{account.accountHolder}</CardTitle>
+                            <div className="min-w-0 flex-1">
+                              <CardTitle className="text-base truncate">{account.accountHolder}</CardTitle>
                               <p className="text-sm text-muted-foreground">{t(account.accountType)}</p>
                             </div>
                           </div>
-                          <Badge variant={account.isActive ? "default" : "secondary"}>
+                          <Badge variant={account.isActive ? "default" : "secondary"} className="flex-shrink-0">
                             {account.isActive ? t("active") : t("inactive")}
                           </Badge>
                         </div>
                       </CardHeader>
-                      <CardContent className="space-y-4">
+                      <CardContent className="space-y-4 mobile-card-padding pt-0">
                         <div>
                           <p className="text-sm text-muted-foreground">Account Number</p>
-                          <p className="font-mono text-sm">{account.accountNumber}</p>
+                          <p className="font-mono text-sm truncate">{account.accountNumber}</p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">Balance</p>
-                          <p className="text-2xl font-bold">
+                          <p className="text-xl sm:text-2xl font-bold">
                             {formatCurrency(account.balance, account.currency)}
                           </p>
                         </div>
@@ -740,38 +752,43 @@ export default function AllAccountsPage() {
                           <p>Owner: {account.ownerId}</p>
                           <p>Currency: {account.currency}</p>
                         </div>
-                        <div className="flex gap-2 pt-2">
+                        <div className="flex flex-col gap-2 pt-2">
                           {account.isActive && accounts.filter(acc => acc.isActive && acc.id !== account.id).length > 0 && (
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleTransferClick(account)}
-                              className="flex-1"
+                              className="mobile-grid-button"
                               data-testid={`transfer-button-grid-${account.id}`}
                             >
-                              <ArrowRightLeft className="h-4 w-4 mr-1" />
-                              Transfer
+                              <ArrowRightLeft className="h-4 w-4 mr-2" />
+                              <span>Transfer</span>
                             </Button>
                           )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditAccount(account)}
-                            className="flex-1"
-                            data-testid="edit-account-button"
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeleteClick(account)}
-                            className="hover:bg-destructive hover:text-destructive-foreground"
-                            data-testid="delete-account-button-grid"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditAccount(account)}
+                              className="flex-1 mobile-action-button mobile-touch-target"
+                              data-testid="edit-account-button"
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              <span className="mobile-show-text-only">Edit</span>
+                              <span className="mobile-hide-text-only">Edit</span>
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteClick(account)}
+                              className="flex-1 mobile-action-button mobile-touch-target hover:bg-destructive hover:text-destructive-foreground"
+                              data-testid="delete-account-button-grid"
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              <span className="mobile-show-text-only">Delete</span>
+                              <span className="mobile-hide-text-only">Delete</span>
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -781,21 +798,21 @@ export default function AllAccountsPage() {
 
               {/* Pagination */}
               {totalPages > 1 && itemsPerPage !== "all" && (
-                <div className="flex items-center justify-between pt-6">
-                  <div className="text-sm text-muted-foreground">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-6">
+                  <div className="text-sm text-muted-foreground text-center sm:text-left">
                     Showing {startIndex + 1} to {Math.min(endIndex, sortedFilteredAccounts.length)} of {sortedFilteredAccounts.length} accounts
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center gap-1 sm:gap-2">
                     {/* First Page Button */}
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setCurrentPage(1)}
                       disabled={currentPage === 1}
-                      className="hidden sm:flex"
+                      className="hidden lg:flex mobile-touch-target"
                     >
                       <ChevronsLeft className="h-4 w-4" />
-                      First
+                      <span className="mobile-hide-text ml-1">First</span>
                     </Button>
                     
                     {/* Previous Button */}
@@ -804,9 +821,10 @@ export default function AllAccountsPage() {
                       size="sm"
                       onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                       disabled={currentPage === 1}
+                      className="mobile-touch-target"
                     >
                       <ChevronLeft className="h-4 w-4" />
-                      <span className="hidden sm:inline">Previous</span>
+                      <span className="mobile-hide-text ml-1">Previous</span>
                     </Button>
                     
                     {/* Page Numbers */}
@@ -823,13 +841,13 @@ export default function AllAccountsPage() {
                               variant={currentPage === page ? "default" : "outline"}
                               size="sm"
                               onClick={() => setCurrentPage(page)}
-                              className="w-8 h-8 p-0"
+                              className="w-9 h-9 p-0 mobile-touch-target"
                             >
                               {page}
                             </Button>
                           );
                         } else if (page === currentPage - 2 || page === currentPage + 2) {
-                          return <span key={page} className="px-2 text-muted-foreground">...</span>;
+                          return <span key={page} className="px-1 sm:px-2 text-muted-foreground">...</span>;
                         }
                         return null;
                       })}
@@ -841,8 +859,9 @@ export default function AllAccountsPage() {
                       size="sm"
                       onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                       disabled={currentPage === totalPages}
+                      className="mobile-touch-target"
                     >
-                      <span className="hidden sm:inline">Next</span>
+                      <span className="mobile-hide-text mr-1">Next</span>
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                     
@@ -852,9 +871,9 @@ export default function AllAccountsPage() {
                       size="sm"
                       onClick={() => setCurrentPage(totalPages)}
                       disabled={currentPage === totalPages}
-                      className="hidden sm:flex"
+                      className="hidden lg:flex mobile-touch-target"
                     >
-                      Last
+                      <span className="mobile-hide-text mr-1">Last</span>
                       <ChevronsRight className="h-4 w-4" />
                     </Button>
                   </div>

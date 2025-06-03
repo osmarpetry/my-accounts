@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import React from "react";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 
@@ -9,9 +9,7 @@ interface DialogContextType {
   onOpenChange: (open: boolean) => void;
 }
 
-const DialogContext = React.createContext<DialogContextType | undefined>(
-  undefined
-);
+const DialogContext = React.createContext<DialogContextType | null>(null);
 
 interface DialogProps {
   open: boolean;
@@ -46,7 +44,7 @@ const DialogContent = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        "relative z-50 grid w-full max-w-lg gap-4 bg-background p-6 shadow-card duration-200 animate-in fade-in-0 zoom-in-95 rounded-xl theme-transition",
+        "relative z-50 grid w-full max-w-lg gap-4 bg-background p-6 shadow-card duration-200 animate-in fade-in-0 zoom-in-95 rounded-xl transition-colors",
         className
       )}
       {...props}

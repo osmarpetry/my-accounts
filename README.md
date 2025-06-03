@@ -1,4 +1,4 @@
-`# Bank Account Management App 
+# Bank Account Management App 
 
 Hey there! Welcome to the Bank Account Management App. This is a cool little project I put together to let you manage bank accounts, move funds around, and all that good stuff. It's built with some modern web tech and designed to be super easy to use.
 

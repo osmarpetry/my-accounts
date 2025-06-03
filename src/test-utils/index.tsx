@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event'
 
 // Import your store slices - using a simple mock for now
 const mockAccountsSlice = {
-  reducer: (state = {}, action: any) => state,
+  reducer: (state = {}) => state,
 }
 
 // Mock store creation utility
@@ -35,7 +35,7 @@ function MockI18nProvider({ children }: { children: ReactNode }) {
 // Test providers wrapper
 interface TestProvidersProps {
   children: ReactNode
-  initialState?: any
+  initialState?: Record<string, unknown>
   store?: ReturnType<typeof createMockStore>
 }
 
@@ -57,7 +57,7 @@ export function TestProviders({
 
 // Custom render function
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
-  initialState?: any
+  initialState?: Record<string, unknown>
   store?: ReturnType<typeof createMockStore>
 }
 

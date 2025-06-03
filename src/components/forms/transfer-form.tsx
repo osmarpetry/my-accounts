@@ -22,7 +22,7 @@ import {
   setError,
 } from "@/store/redux-store";
 import { BankAccount } from "@/types";
-import { X, ArrowRightLeft, AlertTriangle, RefreshCw, DollarSign } from "lucide-react";
+import { X, ArrowRightLeft, RefreshCw, DollarSign } from "lucide-react";
 import { 
   formatCurrencyWithSymbol, 
   getCurrencyConversionPreview,
@@ -90,7 +90,7 @@ export function TransferForm({
       currentFromAccount.currency,
       toAccount.currency
     );
-  }, [formData.amount, currentFromAccount?.currency, toAccount?.currency]);
+  }, [formData.amount, currentFromAccount, toAccount]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};

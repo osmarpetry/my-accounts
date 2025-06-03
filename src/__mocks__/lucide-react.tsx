@@ -1,7 +1,12 @@
 import React from 'react'
 
+interface IconProps {
+  className?: string;
+  [key: string]: unknown;
+}
+
 // Mock all lucide-react icons
-export const ChevronDown = ({ className, ...props }: any) => (
+export const ChevronDown = ({ className, ...props }: IconProps) => (
   <svg 
     data-testid="mock-icon" 
     className={className} 
@@ -11,7 +16,7 @@ export const ChevronDown = ({ className, ...props }: any) => (
   </svg>
 )
 
-export const Building2 = ({ className, ...props }: any) => (
+export const Building2 = ({ className, ...props }: IconProps) => (
   <svg 
     data-testid="mock-building-icon" 
     className={className} 
@@ -22,7 +27,7 @@ export const Building2 = ({ className, ...props }: any) => (
 )
 
 // Export other commonly used icons
-export const Search = ({ className, ...props }: any) => (
+export const Search = ({ className, ...props }: IconProps) => (
   <svg 
     data-testid="mock-search-icon" 
     className={className} 
@@ -32,7 +37,7 @@ export const Search = ({ className, ...props }: any) => (
   </svg>
 )
 
-export const User = ({ className, ...props }: any) => (
+export const User = ({ className, ...props }: IconProps) => (
   <svg 
     data-testid="mock-user-icon" 
     className={className} 
@@ -42,7 +47,7 @@ export const User = ({ className, ...props }: any) => (
   </svg>
 )
 
-export const DollarSign = ({ className, ...props }: any) => (
+export const DollarSign = ({ className, ...props }: IconProps) => (
   <svg 
     data-testid="mock-dollar-icon" 
     className={className} 
@@ -52,7 +57,7 @@ export const DollarSign = ({ className, ...props }: any) => (
   </svg>
 )
 
-export const Calendar = ({ className, ...props }: any) => (
+export const Calendar = ({ className, ...props }: IconProps) => (
   <svg 
     data-testid="mock-calendar-icon" 
     className={className} 
@@ -62,7 +67,7 @@ export const Calendar = ({ className, ...props }: any) => (
   </svg>
 )
 
-export const Filter = ({ className, ...props }: any) => (
+export const Filter = ({ className, ...props }: IconProps) => (
   <svg 
     data-testid="mock-filter-icon" 
     className={className} 
@@ -72,7 +77,7 @@ export const Filter = ({ className, ...props }: any) => (
   </svg>
 )
 
-export const Check = ({ className, ...props }: any) => (
+export const Check = ({ className, ...props }: IconProps) => (
   <svg 
     data-testid="mock-check-icon" 
     className={className} 
@@ -82,7 +87,7 @@ export const Check = ({ className, ...props }: any) => (
   </svg>
 )
 
-export const X = ({ className, ...props }: any) => (
+export const X = ({ className, ...props }: IconProps) => (
   <svg 
     data-testid="mock-x-icon" 
     className={className} 
@@ -92,7 +97,7 @@ export const X = ({ className, ...props }: any) => (
   </svg>
 )
 
-export const Plus = ({ className, ...props }: any) => (
+export const Plus = ({ className, ...props }: IconProps) => (
   <svg 
     data-testid="mock-plus-icon" 
     className={className} 
@@ -102,7 +107,7 @@ export const Plus = ({ className, ...props }: any) => (
   </svg>
 )
 
-export const Edit = ({ className, ...props }: any) => (
+export const Edit = ({ className, ...props }: IconProps) => (
   <svg 
     data-testid="mock-edit-icon" 
     className={className} 
@@ -112,7 +117,7 @@ export const Edit = ({ className, ...props }: any) => (
   </svg>
 )
 
-export const Trash = ({ className, ...props }: any) => (
+export const Trash = ({ className, ...props }: IconProps) => (
   <svg 
     data-testid="mock-trash-icon" 
     className={className} 
@@ -122,7 +127,7 @@ export const Trash = ({ className, ...props }: any) => (
   </svg>
 )
 
-export const ArrowUpDown = ({ className, ...props }: any) => (
+export const ArrowUpDown = ({ className, ...props }: IconProps) => (
   <svg 
     data-testid="mock-arrow-up-down-icon" 
     className={className} 
@@ -132,7 +137,7 @@ export const ArrowUpDown = ({ className, ...props }: any) => (
   </svg>
 )
 
-export const Eye = ({ className, ...props }: any) => (
+export const Eye = ({ className, ...props }: IconProps) => (
   <svg 
     data-testid="mock-eye-icon" 
     className={className} 
@@ -142,7 +147,7 @@ export const Eye = ({ className, ...props }: any) => (
   </svg>
 )
 
-export const EyeOff = ({ className, ...props }: any) => (
+export const EyeOff = ({ className, ...props }: IconProps) => (
   <svg 
     data-testid="mock-eye-off-icon" 
     className={className} 

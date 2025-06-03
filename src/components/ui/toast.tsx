@@ -3,7 +3,7 @@
 import React, { useState, useEffect, createContext, useContext, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
-import { X, CheckCircle, AlertCircle, Info, ArrowUp, Check, Trash2, ArrowRightLeft, Plus, Edit } from "lucide-react";
+import { X, AlertCircle, Info, Check, Trash2, ArrowRightLeft, Plus, Edit } from "lucide-react";
 
 interface Toast {
   id: string;
@@ -46,7 +46,6 @@ interface ToastProviderProps {
 
 export function ToastProvider({ children }: ToastProviderProps) {
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const [showScrollToTop, setShowScrollToTop] = useState(false);
 
   const addToast = (toast: Omit<Toast, "id">) => {
     const id = Math.random().toString(36).substring(7);
@@ -127,16 +126,11 @@ export function ToastProvider({ children }: ToastProviderProps) {
   };
 
   const handleShowScrollToTop = () => {
-    setShowScrollToTop(true);
+    // Placeholder for scroll to top functionality
   };
 
   const handleHideScrollToTop = () => {
-    setShowScrollToTop(false);
-  };
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    setShowScrollToTop(false);
+    // Placeholder for hide scroll to top functionality
   };
 
   const getToastIcon = (type: Toast["type"], title: string) => {

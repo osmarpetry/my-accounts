@@ -1,4 +1,4 @@
-# Bank Account Management App 
+`# Bank Account Management App 
 
 Hey there! Welcome to the Bank Account Management App. This is a cool little project I put together to let you manage bank accounts, move funds around, and all that good stuff. It's built with some modern web tech and designed to be super easy to use.
 
@@ -65,3 +65,4 @@ That's it! The app should be up and running with the mocked backend.
 Thanks for checking out the app! I had fun building it and making sure it hit all the marks.
 
 P.S. I believe tools like LLMs can really help us code faster and smarter. Pretty exciting stuff for the future of development! 🚀
+`

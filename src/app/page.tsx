@@ -561,7 +561,7 @@ export default function HomePage() {
               {displayAccounts.map((account) => (
                 <div
                   key={account.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors theme-transition"
+                  className="flex items-center justify-between p-4 bg-card rounded-xl shadow-subtle hover:shadow-card transition-all theme-transition"
                 >
                   <div className="flex items-center space-x-4">
                     <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
@@ -642,7 +642,7 @@ export default function HomePage() {
               
               {/* View All Accounts Button */}
               {accounts.length > 3 && (
-                <div className="pt-4 border-t">
+                <div className="pt-4">
                   <Link href="/accounts" className="block">
                     <Button
                       variant="outline"

@@ -36,7 +36,7 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         /* Fast headless mode */
         headless: true,
-      },
+    },
     },
   ],
 

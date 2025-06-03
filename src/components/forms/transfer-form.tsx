@@ -273,10 +273,10 @@ export function TransferForm({
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-in" data-testid="transfer-form-modal">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2">
               <ArrowRightLeft className="h-5 w-5" />
-              {t("transferFunds")}
-            </CardTitle>
+            {t("transferFunds")}
+          </CardTitle>
             <Button
               variant="ghost"
               size="icon"
@@ -284,8 +284,8 @@ export function TransferForm({
               className="h-8 w-8"
               data-testid="transfer-form-close"
             >
-              <X className="h-4 w-4" />
-            </Button>
+            <X className="h-4 w-4" />
+          </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -326,67 +326,67 @@ export function TransferForm({
                   </div>
                 </div>
               ) : (
-                <Select
-                  value={formData.fromAccountId}
-                  onValueChange={(value: string) =>
+              <Select
+                value={formData.fromAccountId}
+                onValueChange={(value: string) =>
                     setFormData({ ...formData, fromAccountId: value, toAccountId: "" })
-                  }
-                >
-                  <SelectTrigger
-                    id="fromAccount"
-                    className={errors.fromAccountId ? "border-destructive" : ""}
+                }
+              >
+                <SelectTrigger
+                  id="fromAccount"
+                  className={errors.fromAccountId ? "border-destructive" : ""}
                     data-testid="from-account-select"
-                  >
+                >
                     <SelectValue 
                       placeholder={t("fromAccount")}
                       displayValue={formData.fromAccountId ? (() => {
-                        const selectedAccount = availableFromAccounts.find(acc => acc.id === formData.fromAccountId);
-                        return selectedAccount ? (
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">
-                              {selectedAccount.accountHolder}
-                            </span>
-                            <Badge variant="outline" className="text-xs">
-                              {t(selectedAccount.accountType)}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">
-                              #{selectedAccount.accountNumber} • {t("ownerId")}: {selectedAccount.ownerId}
-                            </span>
-                          </div>
-                        ) : null;
+                      const selectedAccount = availableFromAccounts.find(acc => acc.id === formData.fromAccountId);
+                      return selectedAccount ? (
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">
+                            {selectedAccount.accountHolder}
+                          </span>
+                          <Badge variant="outline" className="text-xs">
+                            {t(selectedAccount.accountType)}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            #{selectedAccount.accountNumber} • {t("ownerId")}: {selectedAccount.ownerId}
+                          </span>
+                        </div>
+                      ) : null;
                       })() : undefined}
                     />
-                  </SelectTrigger>
+                </SelectTrigger>
                   <SelectContent data-testid="from-account-options">
-                    {availableFromAccounts.map((account) => (
+                  {availableFromAccounts.map((account) => (
                       <SelectItem key={account.id} value={account.id} data-testid={`from-account-option-${account.id}`}>
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-foreground">
-                                {account.accountHolder}
-                              </span>
-                              <Badge variant="outline" className="text-xs">
-                                {t(account.accountType)}
-                              </Badge>
-                              <Badge variant="outline" className="text-xs">
-                                {account.currency}
-                              </Badge>
-                            </div>
-                            <span className="text-xs text-muted-foreground">
-                              #{account.accountNumber} • {t("ownerId")}: {account.ownerId}
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-foreground">
+                              {account.accountHolder}
                             </span>
+                            <Badge variant="outline" className="text-xs">
+                              {t(account.accountType)}
+                            </Badge>
+                              <Badge variant="outline" className="text-xs">
+                              {account.currency}
+                            </Badge>
                           </div>
-                          <div className="text-right ml-4">
-                            <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                              {formatCurrencyWithSymbol(account.balance, account.currency)}
-                            </span>
-                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            #{account.accountNumber} • {t("ownerId")}: {account.ownerId}
+                          </span>
                         </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                        <div className="text-right ml-4">
+                          <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                            {formatCurrencyWithSymbol(account.balance, account.currency)}
+                          </span>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               )}
               {errors.fromAccountId && (
                 <p className="text-sm text-destructive" data-testid="from-account-error">{errors.fromAccountId}</p>

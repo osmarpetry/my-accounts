@@ -581,12 +581,12 @@ export default function AllAccountsPage() {
               </div>
 
               {/* View Toggle */}
-              <div className="flex items-center border rounded-md">
+              <div className="flex items-center bg-muted rounded-xl p-1 shadow-subtle">
                 <Button
                   variant={viewMode === "list" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("list")}
-                  className="rounded-r-none px-3"
+                  className="px-3"
                 >
                   <List className="h-4 w-4" />
                 </Button>
@@ -594,7 +594,7 @@ export default function AllAccountsPage() {
                   variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("grid")}
-                  className="rounded-l-none px-3"
+                  className="px-3"
                 >
                   <LayoutGrid className="h-4 w-4" />
                 </Button>
@@ -633,7 +633,7 @@ export default function AllAccountsPage() {
                   {paginatedAccounts.map((account) => (
                     <div
                       key={account.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                      className="flex items-center justify-between p-4 bg-card rounded-xl shadow-subtle hover:shadow-card transition-all theme-transition"
                     >
                       <div className="flex items-center space-x-4">
                         <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
@@ -708,7 +708,7 @@ export default function AllAccountsPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {paginatedAccounts.map((account) => (
-                    <Card key={account.id} className="hover:shadow-md transition-shadow">
+                    <Card key={account.id} className="hover:shadow-card transition-all">
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
@@ -781,7 +781,7 @@ export default function AllAccountsPage() {
 
               {/* Pagination */}
               {totalPages > 1 && itemsPerPage !== "all" && (
-                <div className="flex items-center justify-between pt-6 border-t">
+                <div className="flex items-center justify-between pt-6">
                   <div className="text-sm text-muted-foreground">
                     Showing {startIndex + 1} to {Math.min(endIndex, sortedFilteredAccounts.length)} of {sortedFilteredAccounts.length} accounts
                   </div>

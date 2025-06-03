@@ -57,7 +57,7 @@ const SelectTrigger = React.forwardRef<
       aria-haspopup="listbox"
       aria-controls={context.contentId}
       className={cn(
-        "flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+        "flex h-9 w-full items-center justify-between rounded-xl bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:shadow-card disabled:cursor-not-allowed disabled:opacity-50 shadow-subtle transition-all theme-transition",
         className
       )}
       onClick={() => context.setOpen(!context.open)}
@@ -108,7 +108,7 @@ const SelectContent = React.forwardRef<
       id={context.contentId}
       role="listbox"
       className={cn(
-        "absolute z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95",
+        "absolute z-50 min-w-[8rem] overflow-hidden rounded-xl bg-popover p-1 text-popover-foreground shadow-card animate-in fade-in-0 zoom-in-95 theme-transition",
         "top-full mt-1 w-full",
         className
       )}
@@ -133,7 +133,7 @@ const SelectItem = React.forwardRef<
       role="option"
       aria-selected={context.value === value ? "true" : "false"}
       className={cn(
-        "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "relative flex w-full cursor-default select-none items-center rounded-lg py-1.5 pl-2 pr-8 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 transition-colors",
         className
       )}
       onClick={() => {

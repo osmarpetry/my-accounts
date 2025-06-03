@@ -62,9 +62,9 @@ jest.mock('../select', () => ({
       {children}
     </div>
   ),
-  SelectValue: ({ placeholder, displayValue }: any) => (
+  SelectValue: ({ placeholder, children }: any) => (
     <span data-testid="select-value">
-      {displayValue || placeholder}
+      {children || placeholder}
     </span>
   ),
 }))

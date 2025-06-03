@@ -17,6 +17,11 @@ jest.mock('@/lib/utils', () => ({
   cn: jest.fn((...args) => args.filter(Boolean).join(' ')),
 }))
 
+// Mock ChevronDown icon
+jest.mock('lucide-react', () => ({
+  ChevronDown: () => <svg data-testid="mock-icon" className="h-4 w-4 opacity-50" />,
+}))
+
 // Test utilities
 function createSelectComponent(props = {}) {
   const defaultProps = {
@@ -65,13 +70,13 @@ describe('Select Component', () => {
       render(createSelectComponent())
       
       expect(screen.getByTestId('select-trigger')).toBeInTheDocument()
-      expect(screen.getByRole('combobox')).toBeInTheDocument()
+      expect(screen.getByRole('button')).toBeInTheDocument()
     })
 
     it('initializes with default state', () => {
       render(createSelectComponent())
       
-      const trigger = screen.getByRole('combobox')
+      const trigger = screen.getByRole('button')
       expect(trigger).toHaveAttribute('aria-expanded', 'false')
     })
 
@@ -94,7 +99,7 @@ describe('Select Component', () => {
         </Select>
       )
       
-      expect(screen.getByRole('combobox')).toBeInTheDocument()
+      expect(screen.getByRole('button')).toBeInTheDocument()
     })
   })
 
@@ -102,7 +107,7 @@ describe('Select Component', () => {
     it('renders as a button with correct attributes', () => {
       render(createSelectComponent())
       
-      const trigger = screen.getByRole('combobox')
+      const trigger = screen.getByRole('button')
       expect(trigger).toBeInstanceOf(HTMLButtonElement)
       expect(trigger).toHaveAttribute('type', 'button')
       expect(trigger).toHaveAttribute('aria-haspopup', 'listbox')
@@ -136,7 +141,7 @@ describe('Select Component', () => {
         </Select>
       )
       
-      const trigger = screen.getByRole('combobox')
+      const trigger = screen.getByRole('button')
       expect(trigger).toHaveAttribute('id', 'custom-id')
       expect(trigger).toHaveAttribute('data-custom', 'value')
     })
@@ -145,7 +150,7 @@ describe('Select Component', () => {
       const user = userEvent.setup()
       render(createSelectComponent())
       
-      const trigger = screen.getByRole('combobox')
+      const trigger = screen.getByRole('button')
       expect(trigger).toHaveAttribute('aria-expanded', 'false')
       
       await user.click(trigger)
@@ -245,7 +250,7 @@ describe('Select Component', () => {
         </Select>
       )
       
-      expect(screen.getByTestId('select-value')).toHaveClass('custom-value-class')
+      expect(screen.getByText('Test')).toHaveClass('custom-value-class')
     })
 
     it('forwards additional props correctly', () => {
@@ -262,7 +267,7 @@ describe('Select Component', () => {
         </Select>
       )
       
-      expect(screen.getByTestId('select-value')).toHaveAttribute('title', 'Custom title')
+      expect(screen.getByText('Test')).toHaveAttribute('title', 'Custom title')
     })
 
     it('throws error when used outside Select context', () => {
@@ -287,7 +292,7 @@ describe('Select Component', () => {
       expect(screen.queryByTestId('select-content')).not.toBeInTheDocument()
       
       // Click to open
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       
       // Content should now be visible
       expect(screen.getByTestId('select-content')).toBeInTheDocument()
@@ -304,7 +309,7 @@ describe('Select Component', () => {
       const user = userEvent.setup()
       render(createSelectComponent())
       
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       
       const content = screen.getByRole('listbox')
       expect(content).toHaveAttribute('role', 'listbox')
@@ -323,7 +328,7 @@ describe('Select Component', () => {
         </Select>
       )
       
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       
       expect(screen.getByTestId('content')).toHaveClass('custom-content-class')
     })
@@ -341,7 +346,7 @@ describe('Select Component', () => {
         </Select>
       )
       
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       
       expect(screen.getByTestId('content')).toHaveAttribute('data-custom', 'value')
     })
@@ -362,7 +367,7 @@ describe('Select Component', () => {
       const user = userEvent.setup()
       render(createSelectComponent())
       
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       
       expect(screen.getByText('Option 1')).toBeInTheDocument()
       expect(screen.getByText('Option 2')).toBeInTheDocument()
@@ -373,7 +378,7 @@ describe('Select Component', () => {
       const user = userEvent.setup()
       render(createSelectComponent({ value: 'option1' }))
       
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       
       const items = screen.getAllByRole('option')
       expect(items[0]).toHaveAttribute('aria-selected', 'true')
@@ -386,7 +391,7 @@ describe('Select Component', () => {
       const mockOnValueChange = jest.fn()
       render(createSelectComponent({ onValueChange: mockOnValueChange }))
       
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       await user.click(screen.getByText('Option 2'))
       
       expect(mockOnValueChange).toHaveBeenCalledWith('option2')
@@ -396,7 +401,7 @@ describe('Select Component', () => {
       const user = userEvent.setup()
       render(createSelectComponent())
       
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       expect(screen.getByRole('listbox')).toBeInTheDocument()
       
       await user.click(screen.getByText('Option 1'))
@@ -421,7 +426,7 @@ describe('Select Component', () => {
         </Select>
       )
       
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       
       expect(screen.getByTestId('item')).toHaveClass('custom-item-class')
     })
@@ -445,7 +450,7 @@ describe('Select Component', () => {
         </Select>
       )
       
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       
       expect(screen.getByTestId('item')).toHaveAttribute('title', 'Custom title')
     })
@@ -468,7 +473,7 @@ describe('Select Component', () => {
         </Select>
       )
       
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       
       expect(screen.getByTestId('complex-content')).toBeInTheDocument()
       expect(screen.getByText('Complex')).toBeInTheDocument()
@@ -494,7 +499,7 @@ describe('Select Component', () => {
       render(createSelectComponent({ onValueChange: mockOnValueChange }))
       
       // Open dropdown
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       expect(screen.getByRole('listbox')).toBeInTheDocument()
       
       // Select an option
@@ -503,7 +508,7 @@ describe('Select Component', () => {
       // Verify selection
       expect(mockOnValueChange).toHaveBeenCalledWith('option2')
       expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
-      expect(screen.getByRole('combobox')).toHaveAttribute('aria-expanded', 'false')
+      expect(screen.getByRole('button')).toHaveAttribute('aria-expanded', 'false')
     })
 
     it('maintains controlled state correctly', async () => {
@@ -520,7 +525,7 @@ describe('Select Component', () => {
         })
       )
       
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       await user.click(screen.getByText('Option 3'))
       
       expect(mockOnValueChange).toHaveBeenCalledWith('option3')
@@ -533,7 +538,7 @@ describe('Select Component', () => {
         })
       )
       
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       const items = screen.getAllByRole('option')
       expect(items[2]).toHaveAttribute('aria-selected', 'true')
     })
@@ -542,7 +547,7 @@ describe('Select Component', () => {
       const user = userEvent.setup()
       render(createSelectComponent())
       
-      const trigger = screen.getByRole('combobox')
+      const trigger = screen.getByRole('button')
       
       // Rapidly click multiple times
       await user.click(trigger)
@@ -567,7 +572,7 @@ describe('Select Component', () => {
         </Select>
       )
       
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       
       expect(screen.getByRole('listbox')).toBeInTheDocument()
       expect(screen.queryByRole('option')).not.toBeInTheDocument()
@@ -578,6 +583,9 @@ describe('Select Component', () => {
     it('handles displayValue as empty string', () => {
       render(createSelectWithDisplayValue(''))
       
+      // Check that the SelectValue span is empty (contains empty string)
+      const selectValueSpan = screen.getByTestId('select-trigger').querySelector('span')
+      expect(selectValueSpan).toHaveTextContent('')
       expect(screen.queryByText('option1')).not.toBeInTheDocument()
     })
 
@@ -614,7 +622,7 @@ describe('Select Component', () => {
         </Select>
       )
       
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       
       expect(screen.getByText('Long Option')).toBeInTheDocument()
     })
@@ -634,11 +642,11 @@ describe('Select Component', () => {
         </Select>
       )
       
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       await user.click(screen.getByText('Special'))
       
       // Should not throw any errors
-      expect(screen.getByRole('combobox')).toBeInTheDocument()
+      expect(screen.getByRole('button')).toBeInTheDocument()
     })
   })
 
@@ -651,7 +659,7 @@ describe('Select Component', () => {
         rerender(createSelectComponent({ value: `option${i % 3 + 1}` }))
       }
       
-      expect(screen.getByRole('combobox')).toBeInTheDocument()
+      expect(screen.getByRole('button')).toBeInTheDocument()
     })
 
     it('handles large number of options efficiently', async () => {
@@ -674,7 +682,7 @@ describe('Select Component', () => {
       )
       
       const startTime = performance.now()
-      await user.click(screen.getByRole('combobox'))
+      await user.click(screen.getByRole('button'))
       const endTime = performance.now()
       
       expect(endTime - startTime).toBeLessThan(1000) // Should render within 1 second

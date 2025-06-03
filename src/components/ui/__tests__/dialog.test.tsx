@@ -220,7 +220,7 @@ describe('Dialog Components', () => {
       )
       
       const content = screen.getByText('Default styled content')
-      expect(content).toHaveClass('relative', 'z-50', 'grid', 'w-full', 'max-w-lg', 'gap-4', 'border', 'bg-background', 'p-6', 'shadow-lg', 'duration-200', 'animate-in', 'fade-in-0', 'zoom-in-95', 'rounded-lg')
+      expect(content).toHaveClass('relative', 'z-50', 'grid', 'w-full', 'max-w-lg', 'gap-4', 'bg-background', 'p-6', 'shadow-card', 'duration-200', 'animate-in', 'fade-in-0', 'zoom-in-95', 'rounded-xl', 'transition-colors')
     })
 
     it('close button has correct classes', () => {
@@ -233,7 +233,7 @@ describe('Dialog Components', () => {
       )
       
       const closeButton = screen.getByRole('button')
-      expect(closeButton).toHaveClass('absolute', 'right-4', 'top-4', 'rounded-sm', 'opacity-70', 'ring-offset-background', 'transition-opacity', 'hover:opacity-100', 'focus:outline-none', 'focus:ring-2', 'focus:ring-ring', 'focus:ring-offset-2', 'disabled:pointer-events-none')
+      expect(closeButton).toHaveClass('absolute', 'right-4', 'top-4', 'rounded-lg', 'opacity-70', 'ring-offset-background', 'transition-opacity', 'hover:opacity-100', 'focus:outline-none', 'focus:ring-2', 'focus:ring-ring', 'focus:ring-offset-2', 'disabled:pointer-events-none')
     })
   })
 

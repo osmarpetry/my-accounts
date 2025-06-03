@@ -465,7 +465,7 @@ export function AccountForm({
                       handleFieldChange("accountType", value as AccountType)
                     }
                   >
-                    <SelectTrigger className="mobile-touch-target">
+                    <SelectTrigger className="mobile-touch-target" data-testid="account-type-select">
                       <SelectValue placeholder={t("selectAccountType")}>
                         {(() => {
                           const selectedType = accountTypes.find(type => type.value === formData.accountType);
@@ -542,7 +542,7 @@ export function AccountForm({
                     handleFieldChange("currency", value)
                   }
                 >
-                  <SelectTrigger className="mobile-touch-target">
+                  <SelectTrigger className="mobile-touch-target" data-testid="currency-select">
                     <SelectValue placeholder={t("selectCurrency")}>
                       {formData.currency && (() => {
                         const selectedCurrency = supportedCurrencies.find(currency => currency.value === formData.currency);

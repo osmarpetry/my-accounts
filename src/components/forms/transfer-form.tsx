@@ -332,7 +332,7 @@ export function TransferForm({
                     setFormData({ ...formData, fromAccountId: value, toAccountId: "" })
                 }
               >
-                <SelectTrigger className="mobile-touch-target">
+                <SelectTrigger className="mobile-touch-target" data-testid="from-account-select">
                   <SelectValue placeholder={t("selectFromAccount")}>
                     {formData.fromAccountId && (() => {
                       const selectedAccount = availableFromAccounts.find(acc => acc.id === formData.fromAccountId);
@@ -403,7 +403,7 @@ export function TransferForm({
                     setFormData({ ...formData, toAccountId: value })
                   }
                 >
-                  <SelectTrigger className="mobile-touch-target">
+                  <SelectTrigger className="mobile-touch-target" data-testid="to-account-select">
                     <SelectValue placeholder={t("selectToAccount")}>
                       {formData.toAccountId && (() => {
                         const selectedAccount = availableToAccounts.find(acc => acc.id === formData.toAccountId);

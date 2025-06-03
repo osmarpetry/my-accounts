@@ -293,6 +293,99 @@ export function SearchFilters({
               </div>
             </div>
 
+            {/* Active Filters Display */}
+            {hasActiveFilters && (
+              <div className="space-y-2" data-testid="active-filters-section">
+                <Label className="text-sm font-medium">{t("activeFilters")}</Label>
+                <div className="flex flex-wrap gap-2">
+                  {searchCriteria.accountType && (
+                    <Badge variant="secondary" className="flex items-center gap-1" data-testid="account-type-badge">
+                      <span>Type: {t(searchCriteria.accountType)}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-4 w-4 p-0 hover:bg-transparent"
+                        onClick={() => clearField('accountType')}
+                        data-testid="remove-account-type-filter"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  )}
+                  {searchCriteria.currency && (
+                    <Badge variant="secondary" className="flex items-center gap-1" data-testid="currency-badge">
+                      <span>Currency: {searchCriteria.currency}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-4 w-4 p-0 hover:bg-transparent"
+                        onClick={() => clearField('currency')}
+                        data-testid="remove-currency-filter"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  )}
+                  {searchCriteria.isActive !== undefined && (
+                    <Badge variant="secondary" className="flex items-center gap-1" data-testid="status-badge">
+                      <span>Status: {searchCriteria.isActive ? t("active") : t("inactive")}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-4 w-4 p-0 hover:bg-transparent"
+                        onClick={() => clearField('isActive')}
+                        data-testid="remove-status-filter"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  )}
+                  {searchCriteria.ownerId && (
+                    <Badge variant="secondary" className="flex items-center gap-1" data-testid="owner-id-badge">
+                      <span>Owner ID: {searchCriteria.ownerId}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-4 w-4 p-0 hover:bg-transparent"
+                        onClick={() => clearField('ownerId')}
+                        data-testid="remove-owner-id-filter"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  )}
+                  {searchCriteria.minBalance !== undefined && (
+                    <Badge variant="secondary" className="flex items-center gap-1" data-testid="min-balance-badge">
+                      <span>Min: ${searchCriteria.minBalance}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-4 w-4 p-0 hover:bg-transparent"
+                        onClick={() => clearField('minBalance')}
+                        data-testid="remove-min-balance-filter"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  )}
+                  {searchCriteria.maxBalance !== undefined && (
+                    <Badge variant="secondary" className="flex items-center gap-1" data-testid="max-balance-badge">
+                      <span>Max: ${searchCriteria.maxBalance}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-4 w-4 p-0 hover:bg-transparent"
+                        onClick={() => clearField('maxBalance')}
+                        data-testid="remove-max-balance-filter"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Advanced Filters Collapsible Section */}
             <div className="pt-2">
               <Collapsible open={isAdvancedExpanded} onOpenChange={setIsAdvancedExpanded}>

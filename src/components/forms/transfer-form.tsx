@@ -270,132 +270,126 @@ export function TransferForm({
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-lg animate-fade-in">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="flex items-center gap-2">
-            <ArrowRightLeft className="h-5 w-5 text-primary" />
-            {t("transferFunds")}
-          </CardTitle>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-in" data-testid="transfer-form-modal">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <ArrowRightLeft className="h-5 w-5" />
+              {t("transferFunds")}
+            </CardTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="h-8 w-8"
+              data-testid="transfer-form-close"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          {/* Backend Error Display */}
           {backendError && (
-            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-destructive" />
-                <span className="text-sm text-destructive font-medium">{t("error")}</span>
-              </div>
-              <p className="text-sm text-destructive mt-1">{backendError}</p>
+            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md" data-testid="transfer-error-message">
+              <p className="text-sm text-destructive">{backendError}</p>
             </div>
           )}
 
-          {/* Transfer Summary */}
-          {currentFromAccount && (
-            <div className="mb-6 p-4 bg-muted/30 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">{t("fromAccount")}</span>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">{t(currentFromAccount.accountType)}</Badge>
-                  <Badge variant="outline" className="text-xs">
-                    {currentFromAccount.currency}
-                  </Badge>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{currentFromAccount.accountHolder}</p>
-                  <p className="text-sm text-muted-foreground">
-                    #{currentFromAccount.accountNumber} • {t("ownerId")}: {currentFromAccount.ownerId}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold">
-                    {formatCurrencyWithSymbol(currentFromAccount.balance, currentFromAccount.currency)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{t("available")}</p>
-                </div>
-              </div>
-              {currentFromAccount.balance <= 0 && (
-                <div className="flex items-center gap-2 mt-2 text-orange-600 dark:text-orange-400">
-                  <AlertTriangle className="h-4 w-4" />
-                  <span className="text-sm">{t("insufficientFunds")}</span>
-                </div>
-              )}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6" data-testid="transfer-form">
             {/* Source Account */}
             <div className="space-y-2">
               <Label htmlFor="fromAccount">{t("fromAccount")} *</Label>
-              <Select
-                value={formData.fromAccountId}
-                onValueChange={(value: string) =>
-                  setFormData({ ...formData, fromAccountId: value, toAccountId: formData.toAccountId === value ? "" : formData.toAccountId })
-                }
-              >
-                <SelectTrigger
-                  id="fromAccount"
-                  className={errors.fromAccountId ? "border-destructive" : ""}
+              {fromAccount ? (
+                <div className="p-4 border rounded-md bg-muted/30" data-testid="from-account-display">
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-foreground">
+                          {fromAccount.accountHolder}
+                        </span>
+                        <Badge variant="outline" className="text-xs">
+                          {t(fromAccount.accountType)}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {fromAccount.currency}
+                        </Badge>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        #{fromAccount.accountNumber} • {t("ownerId")}: {fromAccount.ownerId}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                        {formatCurrencyWithSymbol(fromAccount.balance, fromAccount.currency)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <Select
+                  value={formData.fromAccountId}
+                  onValueChange={(value: string) =>
+                    setFormData({ ...formData, fromAccountId: value, toAccountId: "" })
+                  }
                 >
-                  <SelectValue 
-                    placeholder={t("fromAccount")}
-                    displayValue={formData.fromAccountId ? (() => {
-                      const selectedAccount = availableFromAccounts.find(acc => acc.id === formData.fromAccountId);
-                      return selectedAccount ? (
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">
-                            {selectedAccount.accountHolder}
-                          </span>
-                          <Badge variant="outline" className="text-xs">
-                            {t(selectedAccount.accountType)}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            #{selectedAccount.accountNumber} • {t("ownerId")}: {selectedAccount.ownerId}
-                          </span>
-                        </div>
-                      ) : null;
-                    })() : undefined}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableFromAccounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex flex-col">
+                  <SelectTrigger
+                    id="fromAccount"
+                    className={errors.fromAccountId ? "border-destructive" : ""}
+                    data-testid="from-account-select"
+                  >
+                    <SelectValue 
+                      placeholder={t("fromAccount")}
+                      displayValue={formData.fromAccountId ? (() => {
+                        const selectedAccount = availableFromAccounts.find(acc => acc.id === formData.fromAccountId);
+                        return selectedAccount ? (
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-foreground">
-                              {account.accountHolder}
+                            <span className="font-medium">
+                              {selectedAccount.accountHolder}
                             </span>
                             <Badge variant="outline" className="text-xs">
-                              {t(account.accountType)}
+                              {t(selectedAccount.accountType)}
                             </Badge>
-                            <Badge 
-                              variant="outline" 
-                              className="text-xs"
-                            >
-                              {account.currency}
-                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              #{selectedAccount.accountNumber} • {t("ownerId")}: {selectedAccount.ownerId}
+                            </span>
                           </div>
-                          <span className="text-xs text-muted-foreground">
-                            #{account.accountNumber} • {t("ownerId")}: {account.ownerId}
-                          </span>
+                        ) : null;
+                      })() : undefined}
+                    />
+                  </SelectTrigger>
+                  <SelectContent data-testid="from-account-options">
+                    {availableFromAccounts.map((account) => (
+                      <SelectItem key={account.id} value={account.id} data-testid={`from-account-option-${account.id}`}>
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-foreground">
+                                {account.accountHolder}
+                              </span>
+                              <Badge variant="outline" className="text-xs">
+                                {t(account.accountType)}
+                              </Badge>
+                              <Badge variant="outline" className="text-xs">
+                                {account.currency}
+                              </Badge>
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              #{account.accountNumber} • {t("ownerId")}: {account.ownerId}
+                            </span>
+                          </div>
+                          <div className="text-right ml-4">
+                            <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                              {formatCurrencyWithSymbol(account.balance, account.currency)}
+                            </span>
+                          </div>
                         </div>
-                        <div className="text-right ml-4">
-                          <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                            {formatCurrencyWithSymbol(account.balance, account.currency)}
-                          </span>
-                        </div>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               {errors.fromAccountId && (
-                <p className="text-sm text-destructive">{errors.fromAccountId}</p>
+                <p className="text-sm text-destructive" data-testid="from-account-error">{errors.fromAccountId}</p>
               )}
             </div>
 
@@ -403,7 +397,7 @@ export function TransferForm({
             <div className="space-y-2">
               <Label htmlFor="toAccount">{t("toAccount")} *</Label>
               {availableToAccounts.length === 0 ? (
-                <div className="p-4 border rounded-md bg-muted/30">
+                <div className="p-4 border rounded-md bg-muted/30" data-testid="no-destination-accounts">
                   <p className="text-sm text-muted-foreground">
                     {formData.fromAccountId 
                       ? "No other active accounts available for transfer"
@@ -420,6 +414,7 @@ export function TransferForm({
                   <SelectTrigger
                     id="toAccount"
                     className={errors.toAccountId ? "border-destructive" : ""}
+                    data-testid="to-account-select"
                   >
                     <SelectValue 
                       placeholder={t("toAccount")}
@@ -441,9 +436,9 @@ export function TransferForm({
                       })() : undefined}
                     />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent data-testid="to-account-options">
                     {availableToAccounts.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
+                      <SelectItem key={account.id} value={account.id} data-testid={`to-account-option-${account.id}`}>
                         <div className="flex items-center justify-between w-full">
                           <div className="flex flex-col">
                             <div className="flex items-center gap-2">
@@ -476,7 +471,7 @@ export function TransferForm({
                 </Select>
               )}
               {errors.toAccountId && (
-                <p className="text-sm text-destructive">{errors.toAccountId}</p>
+                <p className="text-sm text-destructive" data-testid="to-account-error">{errors.toAccountId}</p>
               )}
             </div>
 
@@ -494,13 +489,14 @@ export function TransferForm({
                   value={formData.amount}
                   onChange={(e) => handleAmountChange(e.target.value)}
                   className={`pl-12 ${errors.amount ? "border-destructive" : ""}`}
+                  data-testid="transfer-amount-input"
                 />
               </div>
               {currentFromAccount && (
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>{t("available")}: {formatCurrencyWithSymbol(currentFromAccount.balance, currentFromAccount.currency)}</span>
+                <div className="flex justify-between text-xs text-muted-foreground" data-testid="amount-info">
+                  <span data-testid="available-balance">{t("available")}: {formatCurrencyWithSymbol(currentFromAccount.balance, currentFromAccount.currency)}</span>
                   {formData.amount && !isNaN(parseFloat(formData.amount)) && (
-                    <span>
+                    <span data-testid="remaining-balance">
                       {t("remaining")}:{" "}
                       {formatCurrencyWithSymbol(
                         Math.max(0, currentFromAccount.balance - parseFloat(formData.amount)),
@@ -511,13 +507,13 @@ export function TransferForm({
                 </div>
               )}
               {errors.amount && (
-                <p className="text-sm text-destructive">{errors.amount}</p>
+                <p className="text-sm text-destructive" data-testid="amount-error">{errors.amount}</p>
               )}
             </div>
 
             {/* Currency Conversion Preview */}
             {toAccount && conversionPreview && conversionPreview.isDifferent && (
-              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-lg">
+              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-lg" data-testid="currency-conversion-preview">
                 <div className="flex items-center gap-2 mb-2">
                   <RefreshCw className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                   <span className="font-medium text-blue-700 dark:text-blue-300">
@@ -527,19 +523,19 @@ export function TransferForm({
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span>{t("youSend")}:</span>
-                    <span className="font-medium">
+                    <span className="font-medium" data-testid="conversion-send-amount">
                       {formatCurrencyWithSymbol(conversionPreview.sourceAmount, currentFromAccount?.currency ?? "USD")}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("theyReceive")}:</span>
-                    <span className="font-medium text-green-600 dark:text-green-400">
+                    <span className="font-medium text-green-600 dark:text-green-400" data-testid="conversion-receive-amount">
                       {formatCurrencyWithSymbol(conversionPreview.targetAmount, toAccount.currency)}
                     </span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>{t("exchangeRate")}:</span>
-                    <span>1 {currentFromAccount?.currency} = {conversionPreview.exchangeRate.toFixed(4)} {toAccount.currency}</span>
+                    <span data-testid="exchange-rate">1 {currentFromAccount?.currency} = {conversionPreview.exchangeRate.toFixed(4)} {toAccount.currency}</span>
                   </div>
                 </div>
               </div>
@@ -557,18 +553,19 @@ export function TransferForm({
                 placeholder={t("transferDescriptionPlaceholder")}
                 maxLength={200}
                 className={errors.description ? "border-destructive" : ""}
+                data-testid="transfer-description-input"
               />
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{formData.description.length}/200 characters</span>
+                <span data-testid="description-character-count">{formData.description.length}/200 characters</span>
               </div>
               {errors.description && (
-                <p className="text-sm text-destructive">{errors.description}</p>
+                <p className="text-sm text-destructive" data-testid="description-error">{errors.description}</p>
               )}
             </div>
 
             {/* Transfer Preview */}
             {toAccount && formData.amount && !isNaN(parseFloat(formData.amount)) && (
-              <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+              <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg" data-testid="transfer-summary">
                 <h4 className="font-medium mb-2 flex items-center gap-2">
                   <DollarSign className="h-4 w-4" />
                   {t("transferSummary")}
@@ -576,20 +573,20 @@ export function TransferForm({
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span>{t("from")}:</span>
-                    <span>{currentFromAccount?.accountHolder} ({currentFromAccount?.currency})</span>
+                    <span data-testid="summary-from-account">{currentFromAccount?.accountHolder} ({currentFromAccount?.currency})</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("to")}:</span>
-                    <span>{toAccount.accountHolder} ({toAccount.currency})</span>
+                    <span data-testid="summary-to-account">{toAccount.accountHolder} ({toAccount.currency})</span>
                   </div>
                   <div className="flex justify-between font-medium">
                     <span>{t("amount")}:</span>
-                    <span>{formatCurrencyWithSymbol(parseFloat(formData.amount), currentFromAccount?.currency ?? "USD")}</span>
+                    <span data-testid="summary-amount">{formatCurrencyWithSymbol(parseFloat(formData.amount), currentFromAccount?.currency ?? "USD")}</span>
                   </div>
                   {conversionPreview && conversionPreview.isDifferent && (
                     <div className="flex justify-between font-medium text-green-600 dark:text-green-400">
                       <span>{t("recipientGets")}:</span>
-                      <span>{formatCurrencyWithSymbol(conversionPreview.targetAmount, toAccount.currency)}</span>
+                      <span data-testid="summary-recipient-amount">{formatCurrencyWithSymbol(conversionPreview.targetAmount, toAccount.currency)}</span>
                     </div>
                   )}
                 </div>
@@ -603,6 +600,7 @@ export function TransferForm({
                 onClick={onClose}
                 className="flex-1"
                 disabled={isSubmitting}
+                data-testid="transfer-cancel-button"
               >
                 {t("cancel")}
               </Button>
@@ -614,6 +612,7 @@ export function TransferForm({
                   (currentFromAccount?.balance ?? 0) <= 0 ||
                   availableToAccounts.length === 0
                 }
+                data-testid="transfer-submit-button"
               >
                 {isSubmitting ? t("processing") : t("transferFunds")}
               </Button>

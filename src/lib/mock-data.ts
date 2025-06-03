@@ -99,6 +99,43 @@ export const mockAccounts: BankAccount[] = [
     createdAt: "2024-01-09T00:00:00.000Z",
     updatedAt: "2024-01-09T00:00:00.000Z",
   },
+  // Zero balance accounts for delete testing
+  {
+    id: "9",
+    ownerId: "111111",
+    accountNumber: "1111111111",
+    accountType: "checking",
+    accountHolder: "Test User Zero",
+    balance: 0,
+    currency: "USD",
+    isActive: true,
+    createdAt: "2024-01-16T00:00:00.000Z",
+    updatedAt: "2024-01-16T00:00:00.000Z",
+  },
+  {
+    id: "10",
+    ownerId: "222222",
+    accountNumber: "2222222222",
+    accountType: "savings",
+    accountHolder: "Empty Account",
+    balance: 0,
+    currency: "EUR",
+    isActive: true,
+    createdAt: "2024-01-17T00:00:00.000Z",
+    updatedAt: "2024-01-17T00:00:00.000Z",
+  },
+  {
+    id: "11",
+    ownerId: "333333",
+    accountNumber: "3333333333",
+    accountType: "checking",
+    accountHolder: "Zero Balance Test",
+    balance: 0,
+    currency: "GBP",
+    isActive: true,
+    createdAt: "2024-01-18T00:00:00.000Z",
+    updatedAt: "2024-01-18T00:00:00.000Z",
+  },
 ];
 
 export const mockTransactions: Transaction[] = []; 

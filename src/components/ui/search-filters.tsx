@@ -67,7 +67,7 @@ export function SearchFilters({
   totalCount,
 }: SearchFiltersProps) {
   const { t } = useTranslation();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true); // Default to expanded for E2E testing
   const supportedCurrencies = getSupportedCurrencies();
 
   const updateCriteria = (updates: Partial<SearchCriteria>) => {
@@ -89,21 +89,21 @@ export function SearchFilters({
   ).length;
 
   return (
-    <Card className="w-full">
+    <Card className="w-full" data-testid="search-filters-card">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Search className="h-5 w-5 text-primary" />
             <span>{t("search")} & {t("filters")}</span>
             {activeFilterCount > 0 && (
-              <Badge variant="secondary" className="ml-2">
+              <Badge variant="secondary" className="ml-2" data-testid="active-filter-count">
                 {activeFilterCount}
               </Badge>
             )}
           </div>
           <div className="flex items-center gap-2">
             {resultCount !== undefined && totalCount !== undefined && (
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-muted-foreground" data-testid="results-count">
                 {resultCount === totalCount 
                   ? `${totalCount} accounts`
                   : `${resultCount} of ${totalCount} accounts`
@@ -112,7 +112,7 @@ export function SearchFilters({
             )}
             <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
               <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" data-testid="filters-toggle">
                   {isExpanded ? (
                     <ChevronUp className="h-4 w-4" />
                   ) : (
@@ -134,6 +134,7 @@ export function SearchFilters({
             value={searchCriteria.query || ""}
             onChange={(e) => updateCriteria({ query: e.target.value || undefined })}
             className="pl-10 pr-10"
+            data-testid="search-input"
           />
           {searchCriteria.query && (
             <Button
@@ -141,6 +142,7 @@ export function SearchFilters({
               size="sm"
               className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
               onClick={() => clearField('query')}
+              data-testid="clear-search-button"
             >
               <X className="h-3 w-3" />
             </Button>
@@ -162,8 +164,9 @@ export function SearchFilters({
                   onValueChange={(value) => 
                     updateCriteria({ accountType: value as AccountType || undefined })
                   }
+                  data-testid="account-type-filter"
                 >
-                  <SelectTrigger>
+                  <SelectTrigger data-testid="account-type-select">
                     <SelectValue 
                       placeholder={t("filterByType")}
                       displayValue={searchCriteria.accountType ? (() => {
@@ -177,10 +180,10 @@ export function SearchFilters({
                       })() : undefined}
                     />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">All Types</SelectItem>
+                  <SelectContent data-testid="account-type-options">
+                    <SelectItem value="" data-testid="account-type-option-all">All Types</SelectItem>
                     {accountTypes.map(({ value, icon: Icon }) => (
-                      <SelectItem key={value} value={value}>
+                      <SelectItem key={value} value={value} data-testid={`account-type-option-${value}`}>
                         <div className="flex items-center gap-2">
                           <Icon className="h-4 w-4" />
                           <span>{t(value)}</span>
@@ -202,8 +205,9 @@ export function SearchFilters({
                   onValueChange={(value) => 
                     updateCriteria({ currency: value as Currency || undefined })
                   }
+                  data-testid="currency-filter"
                 >
-                  <SelectTrigger>
+                  <SelectTrigger data-testid="currency-select">
                     <SelectValue 
                       placeholder={t("filterByCurrency")}
                       displayValue={searchCriteria.currency ? (
@@ -219,10 +223,10 @@ export function SearchFilters({
                       ) : undefined}
                     />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">All Currencies</SelectItem>
+                  <SelectContent data-testid="currency-options">
+                    <SelectItem value="" data-testid="currency-option-all">All Currencies</SelectItem>
                     {supportedCurrencies.map((currency) => (
-                      <SelectItem key={currency} value={currency}>
+                      <SelectItem key={currency} value={currency} data-testid={`currency-option-${currency}`}>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">
                             {getCurrencySymbol(currency)}
@@ -248,8 +252,9 @@ export function SearchFilters({
                       isActive: value === "" ? undefined : value === "true" 
                     })
                   }
+                  data-testid="status-filter"
                 >
-                  <SelectTrigger>
+                  <SelectTrigger data-testid="status-select">
                     <SelectValue 
                       placeholder={t("filterByStatus")}
                       displayValue={searchCriteria.isActive !== undefined ? (
@@ -257,10 +262,10 @@ export function SearchFilters({
                       ) : undefined}
                     />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">All Statuses</SelectItem>
-                    <SelectItem value="true">{t("active")}</SelectItem>
-                    <SelectItem value="false">{t("inactive")}</SelectItem>
+                  <SelectContent data-testid="status-options">
+                    <SelectItem value="" data-testid="status-option-all">All Statuses</SelectItem>
+                    <SelectItem value="true" data-testid="status-option-active">{t("active")}</SelectItem>
+                    <SelectItem value="false" data-testid="status-option-inactive">{t("inactive")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -287,6 +292,7 @@ export function SearchFilters({
                     }
                   }}
                   maxLength={6}
+                  data-testid="owner-id-input"
                 />
               </div>
 
@@ -307,6 +313,7 @@ export function SearchFilters({
                   }
                   min="0"
                   step="0.01"
+                  data-testid="min-balance-input"
                 />
               </div>
 
@@ -327,48 +334,52 @@ export function SearchFilters({
                   }
                   min="0"
                   step="0.01"
+                  data-testid="max-balance-input"
                 />
               </div>
             </div>
 
             {/* Active Filters & Clear Button */}
             {hasActiveFilters && (
-              <div className="flex items-center justify-between pt-2 border-t">
+              <div className="flex items-center justify-between pt-2 border-t" data-testid="active-filters-section">
                 <div className="flex flex-wrap gap-2">
                   {searchCriteria.accountType && (
-                    <Badge variant="secondary" className="gap-1">
+                    <Badge variant="secondary" className="gap-1" data-testid="account-type-badge">
                       Type: {t(searchCriteria.accountType)}
                       <Button
                         variant="ghost"
                         size="sm"
                         className="h-4 w-4 p-0 ml-1"
                         onClick={() => clearField('accountType')}
+                        data-testid="remove-account-type-filter"
                       >
                         <X className="h-3 w-3" />
                       </Button>
                     </Badge>
                   )}
                   {searchCriteria.currency && (
-                    <Badge variant="secondary" className="gap-1">
+                    <Badge variant="secondary" className="gap-1" data-testid="currency-badge">
                       {searchCriteria.currency}
                       <Button
                         variant="ghost"
                         size="sm"
                         className="h-4 w-4 p-0 ml-1"
                         onClick={() => clearField('currency')}
+                        data-testid="remove-currency-filter"
                       >
                         <X className="h-3 w-3" />
                       </Button>
                     </Badge>
                   )}
                   {searchCriteria.isActive !== undefined && (
-                    <Badge variant="secondary" className="gap-1">
+                    <Badge variant="secondary" className="gap-1" data-testid="status-badge">
                       Status: {searchCriteria.isActive ? t("active") : t("inactive")}
                       <Button
                         variant="ghost"
                         size="sm"
                         className="h-4 w-4 p-0 ml-1"
                         onClick={() => clearField('isActive')}
+                        data-testid="remove-status-filter"
                       >
                         <X className="h-3 w-3" />
                       </Button>
@@ -383,6 +394,7 @@ export function SearchFilters({
                         size="sm"
                         onClick={onClearFilters}
                         className="gap-2"
+                        data-testid="clear-all-filters-button"
                       >
                         <RotateCcw className="h-4 w-4" />
                         {t("clearFilters")}

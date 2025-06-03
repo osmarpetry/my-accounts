@@ -348,19 +348,19 @@ export function AccountForm({
   return (
     <>
       <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-lg animate-fade-in">
+        <Card className="w-full max-w-lg animate-fade-in" data-testid="account-form-modal">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5 text-primary" />
               {isEditing ? t("editAccount") : t("createNewAccount")}
             </CardTitle>
-            <Button variant="ghost" size="icon" onClick={onClose} className="cursor-pointer">
+            <Button variant="ghost" size="icon" onClick={onClose} className="cursor-pointer" data-testid="account-form-close">
               <X className="h-4 w-4" />
             </Button>
           </CardHeader>
           <CardContent>
             {isEditing && account && (
-              <div className="mb-6 p-4 bg-muted/30 rounded-lg">
+              <div className="mb-6 p-4 bg-muted/30 rounded-lg" data-testid="current-account-info">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">{t("currentAccount")}</span>
                   <span className="text-xs text-muted-foreground">#{account.accountNumber}</span>
@@ -376,7 +376,7 @@ export function AccountForm({
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" data-testid="account-form">
               {/* Owner ID - Only for new accounts */}
               {!isEditing && (
                 <div className="space-y-2">
@@ -401,19 +401,21 @@ export function AccountForm({
                       className={`flex-1 ${errors.ownerId ? "border-destructive" : ""}`}
                       maxLength={6}
                       disabled={true}
+                      data-testid="owner-id-input"
                     />
                     <Button
                       type="button"
                       variant="outline"
                       onClick={generateRandomOwnerId}
                       className="shrink-0 cursor-pointer"
+                      data-testid="generate-owner-id-button"
                     >
                       <User className="h-4 w-4 mr-2" />
                       {t("generate")}
                     </Button>
                   </div>
                   {errors.ownerId && (
-                    <p className="text-sm text-destructive flex items-center gap-1">
+                    <p className="text-sm text-destructive flex items-center gap-1" data-testid="owner-id-error">
                       <AlertTriangle className="h-3 w-3" />
                       {errors.ownerId}
                     </p>
@@ -440,14 +442,15 @@ export function AccountForm({
                   placeholder={t("enterFullName")}
                   className={`w-full ${errors.accountHolder ? "border-destructive" : ""}`}
                   maxLength={100}
+                  data-testid="account-holder-input"
                 />
                 {errors.accountHolder && (
-                  <p className="text-sm text-destructive flex items-center gap-1">
+                  <p className="text-sm text-destructive flex items-center gap-1" data-testid="account-holder-error">
                     <AlertTriangle className="h-3 w-3" />
                     {errors.accountHolder}
                   </p>
                 )}
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground" data-testid="account-holder-character-count">
                   {formData.accountHolder.length}/100 {t("characters")}
                 </p>
               </div>
@@ -462,7 +465,7 @@ export function AccountForm({
                       handleFieldChange("accountType", value as AccountType)
                     }
                   >
-                    <SelectTrigger id="accountType" className="w-full cursor-pointer">
+                    <SelectTrigger id="accountType" className="w-full cursor-pointer" data-testid="account-type-select">
                       <SelectValue 
                         placeholder={t("selectAccountType")}
                         displayValue={(() => {
@@ -471,9 +474,9 @@ export function AccountForm({
                         })()}
                       />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent data-testid="account-type-options">
                       {accountTypes.map((type) => (
-                        <SelectItem key={type.value} value={type.value} className="cursor-pointer">
+                        <SelectItem key={type.value} value={type.value} className="cursor-pointer" data-testid={`account-type-option-${type.value}`}>
                           <div>
                             <div className="font-medium">{type.label}</div>
                             <div className="text-sm text-muted-foreground">
@@ -517,10 +520,11 @@ export function AccountForm({
                     style={{
                       paddingLeft: `${Math.max(getCurrencySymbol(formData.currency).length * 8 + 24, 40)}px`
                     }}
+                    data-testid="balance-input"
                   />
                 </div>
                 {errors.balance && (
-                  <p className="text-sm text-destructive flex items-center gap-1">
+                  <p className="text-sm text-destructive flex items-center gap-1" data-testid="balance-error">
                     <AlertTriangle className="h-3 w-3" />
                     {errors.balance}
                   </p>
@@ -539,7 +543,7 @@ export function AccountForm({
                     handleFieldChange("currency", value)
                   }
                 >
-                  <SelectTrigger id="currency" className="w-full cursor-pointer">
+                  <SelectTrigger id="currency" className="w-full cursor-pointer" data-testid="currency-select">
                     <SelectValue 
                       placeholder={t("selectCurrency")}
                       displayValue={(() => {
@@ -555,9 +559,9 @@ export function AccountForm({
                       })()}
                     />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent data-testid="currency-options">
                     {supportedCurrencies.map((currency) => (
-                      <SelectItem key={currency.value} value={currency.value} className="cursor-pointer">
+                      <SelectItem key={currency.value} value={currency.value} className="cursor-pointer" data-testid={`currency-option-${currency.value}`}>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{currency.label}</span>
                           <span className="text-sm text-muted-foreground">
@@ -584,6 +588,7 @@ export function AccountForm({
                           ? t("accountActiveTransactions")
                           : t("accountDisabledCannot")
                       }
+                      data-testid="account-status-switch"
                     />
                   </div>
                 </div>
@@ -596,10 +601,11 @@ export function AccountForm({
                   onClick={onClose}
                   className="flex-1 cursor-pointer"
                   disabled={isSubmitting}
+                  data-testid="account-cancel-button"
                 >
                   {t("cancel")}
                 </Button>
-                <Button type="submit" className="flex-1 cursor-pointer" disabled={isSubmitting}>
+                <Button type="submit" className="flex-1 cursor-pointer" disabled={isSubmitting} data-testid="account-submit-button">
                   {isSubmitting
                     ? t("saving")
                     : isEditing
@@ -623,6 +629,7 @@ export function AccountForm({
         onCancel={handleCancelDeactivation}
         confirmText={t("deactivateAccount")}
         cancelText={t("keepActive")}
+        data-testid="deactivation-warning-modal"
       />
 
       {/* Server Error Modal */}
@@ -635,6 +642,7 @@ export function AccountForm({
         onConfirm={() => setServerError({show: false, message: '', type: 'error'})}
         confirmText={t("ok")}
         showCancel={false}
+        data-testid="server-error-modal"
       />
     </>
   );

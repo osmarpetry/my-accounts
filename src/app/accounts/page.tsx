@@ -101,6 +101,7 @@ interface ConfirmDialogProps {
   description: string;
   onConfirm: () => void;
   loading?: boolean;
+  testId?: string;
 }
 
 function ConfirmDialog({
@@ -110,20 +111,21 @@ function ConfirmDialog({
   description,
   onConfirm,
   loading = false,
+  testId,
 }: ConfirmDialogProps) {
   const { t } = useTranslation();
   
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" data-testid={testId}>
       <Card className="w-full max-w-md animate-fade-in">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2" data-testid={testId ? `${testId}-title` : undefined}>
             <AlertCircle className="h-5 w-5 text-destructive" />
             {title}
           </CardTitle>
-          <CardDescription>{description}</CardDescription>
+          <CardDescription data-testid={testId ? `${testId}-description` : undefined}>{description}</CardDescription>
         </CardHeader>
         <CardContent className="flex gap-2 pt-0">
           <Button
@@ -131,6 +133,7 @@ function ConfirmDialog({
             onClick={() => onOpenChange(false)}
             disabled={loading}
             className="flex-1"
+            data-testid={testId ? `${testId}-cancel` : undefined}
           >
             {t("cancel")}
           </Button>
@@ -139,6 +142,7 @@ function ConfirmDialog({
             onClick={onConfirm}
             disabled={loading}
             className="flex-1"
+            data-testid={testId ? `${testId}-confirm` : undefined}
           >
             {loading ? t("processing") : t("delete")}
           </Button>
@@ -442,6 +446,7 @@ export default function AllAccountsPage() {
             variant="outline"
             className="flex items-center gap-2"
             disabled={accounts.filter(acc => acc.isActive).length < 2}
+            data-testid="transfer-button-header"
           >
             <ArrowRightLeft className="h-4 w-4" />
             {t("transfer")}
@@ -449,6 +454,7 @@ export default function AllAccountsPage() {
           <Button
             onClick={handleCreateAccount}
             className="flex items-center gap-2"
+            data-testid="create-account-button"
           >
             <Plus className="h-4 w-4" />
             {t("createAccount")}
@@ -609,7 +615,7 @@ export default function AllAccountsPage() {
                   : t("adjustSearchCriteria")}
               </p>
               {accounts.length === 0 ? (
-                <Button onClick={handleCreateAccount}>
+                <Button onClick={handleCreateAccount} data-testid="create-account-button-empty">
                   <Plus className="h-4 w-4 mr-2" />
                   {t("createAccount")}
                 </Button>
@@ -669,6 +675,7 @@ export default function AllAccountsPage() {
                               onClick={() => handleTransferClick(account)}
                               className="h-8 w-8"
                               title={t("transfer")}
+                              data-testid={`transfer-button-${account.id}`}
                             >
                               <ArrowRightLeft className="h-4 w-4" />
                             </Button>
@@ -689,6 +696,7 @@ export default function AllAccountsPage() {
                             onClick={() => handleDeleteClick(account)}
                             className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
                             title={t("delete")}
+                            data-testid="delete-account-button"
                           >
                             <Trash2 className="h-4 w-4" data-testid="trash-icon" />
                           </Button>
@@ -739,6 +747,7 @@ export default function AllAccountsPage() {
                               size="sm"
                               onClick={() => handleTransferClick(account)}
                               className="flex-1"
+                              data-testid={`transfer-button-grid-${account.id}`}
                             >
                               <ArrowRightLeft className="h-4 w-4 mr-1" />
                               Transfer
@@ -759,6 +768,7 @@ export default function AllAccountsPage() {
                             size="sm"
                             onClick={() => handleDeleteClick(account)}
                             className="hover:bg-destructive hover:text-destructive-foreground"
+                            data-testid="delete-account-button-grid"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -892,18 +902,19 @@ export default function AllAccountsPage() {
         description={t("deleteConfirmation", { accountName: deleteDialog.accountName })}
         onConfirm={handleDeleteConfirm}
         loading={deleteDialog.loading}
+        testId="delete-confirmation-dialog"
       />
 
       {/* Delete Warning Modal */}
       {showDeleteWarning && accountToDelete && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" data-testid="delete-warning-modal">
           <Card className="w-full max-w-md animate-fade-in">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2" data-testid="delete-warning-title">
                 <AlertCircle className="h-5 w-5 text-orange-500" />
                 {t("operationNotAllowed")}
               </CardTitle>
-              <CardDescription>
+              <CardDescription data-testid="delete-warning-description">
                 {t("cannotDeleteWithBalance")}. This account has a balance of {formatCurrency(accountToDelete.balance, accountToDelete.currency)}. Please transfer the funds or update the balance to zero before deleting.
               </CardDescription>
             </CardHeader>
@@ -915,6 +926,7 @@ export default function AllAccountsPage() {
                   setAccountToDelete(null);
                 }}
                 className="flex-1"
+                data-testid="delete-warning-ok-button"
               >
                 {t("ok")}
               </Button>

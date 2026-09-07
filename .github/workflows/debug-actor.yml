@@ -1,0 +1,10 @@
+name: debug-actor
+on: [pull_request]
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "actor=${{ github.actor }}"
+          echo "pr.user.login=${{ github.event.pull_request.user.login }}"
+          echo "condition=${{ github.event.pull_request.user.login == 'dependabot[bot]' }}"
